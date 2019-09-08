@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.4.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="J. Renato Leripio">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Em posts anteriores apresentei algumas metodologias capazes de melhorar previsões. Em particular, falei um pouco sobre bagging — uma técnica que estima um modelo específico sobre variações da série original e, em seguida, computa a média/mediana destas previsões (ver aqui) — e sobre rectify — uma abordagem que considera eventuais informações contidas nos erros de previsão (ver aqui). Em todos os casos considerei apenas um único modelo para realizar as previsões.">
+
+  
+  <link rel="alternate" hreflang="en" href="/post/combinando-modelos-de-previsao/">
+
+  
+
+
+
+
+  
+
+  
+  
+  
+  <meta name="theme-color" content="#2962ff">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css" crossorigin="anonymous" title="hl-light">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+        
+      
+    
+
+    
+
+    
+
+  
+
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700|Roboto:400,400italic,700|Roboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.04a87a1cb9027e3c50f566322527c56f.css">
+
+  
+
+  
+  
+    <script>
+      window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+      ga('create', 'UA-120676890-1', 'auto');
+      
+      ga('require', 'eventTracker');
+      ga('require', 'outboundLinkTracker');
+      ga('require', 'urlChangeTracker');
+      ga('send', 'pageview');
+    </script>
+    <script async src="https://www.google-analytics.com/analytics.js"></script>
+    
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/autotrack/2.4.1/autotrack.js" integrity="sha512-HUmooslVKj4m6OBu0OgzjXXr+QuFYy/k7eLI5jdeEy/F4RSgMn6XRWRGkFi5IFaFgy7uFTkegp3Z0XnJf3Jq+g==" crossorigin="anonymous"></script>
+    
+  
+  
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/combinando-modelos-de-previsao/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="RLeripio">
+  <meta property="og:url" content="/post/combinando-modelos-de-previsao/">
+  <meta property="og:title" content="Combinando modelos de previsão | RLeripio">
+  <meta property="og:description" content="Em posts anteriores apresentei algumas metodologias capazes de melhorar previsões. Em particular, falei um pouco sobre bagging — uma técnica que estima um modelo específico sobre variações da série original e, em seguida, computa a média/mediana destas previsões (ver aqui) — e sobre rectify — uma abordagem que considera eventuais informações contidas nos erros de previsão (ver aqui). Em todos os casos considerei apenas um único modelo para realizar as previsões."><meta property="og:image" content="/img/logo.png">
+  <meta property="twitter:image" content="/img/logo.png"><meta property="og:locale" content="en">
+  
+    
+      <meta property="article:published_time" content="2019-07-11T00:00:00&#43;00:00">
+    
+    <meta property="article:modified_time" content="2019-09-08T19:26:54-03:00">
+  
+
+  
+
+
+  
+
+
+
+
+
+  <title>Combinando modelos de previsão | RLeripio</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Pesquisar</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Pesquisar..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/"><img src="/img/logo.png" alt="RLeripio"></a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Alterar navegação">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Sobre</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Blog</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article" itemscope itemtype="http://schema.org/Article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1 itemprop="name">Combinando modelos de previsão</h1>
+
+  
+
+  
+    
+
+
+
+<meta content="2019-07-11 00:00:00 &#43;0000 UTC" itemprop="datePublished">
+<meta content="2019-09-08 19:26:54 -0300 -03" itemprop="dateModified">
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+          Última atualização em
+      
+    
+    <time>Sep 8, 2019</time>
+  </span>
+  
+
+  
+
+  
+
+  
+  
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="">Previsão</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/combinando-modelos-de-previsao/&amp;text=Combinando%20modelos%20de%20previs%c3%a3o" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/combinando-modelos-de-previsao/&amp;t=Combinando%20modelos%20de%20previs%c3%a3o" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Combinando%20modelos%20de%20previs%c3%a3o&amp;body=/post/combinando-modelos-de-previsao/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/combinando-modelos-de-previsao/&amp;title=Combinando%20modelos%20de%20previs%c3%a3o" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Combinando%20modelos%20de%20previs%c3%a3o%20/post/combinando-modelos-de-previsao/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/combinando-modelos-de-previsao/&amp;title=Combinando%20modelos%20de%20previs%c3%a3o" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style" itemprop="articleBody">
+      <p>Em posts anteriores apresentei algumas metodologias capazes de melhorar previsões. Em particular, falei um pouco sobre <strong>bagging</strong> — uma técnica que estima um modelo específico sobre variações da série original e, em seguida, computa a média/mediana destas previsões <a href="http://rleripio.com.br/post/como-aprimorar-previsoes-uma-aplicacao-com-bootstrap/">(ver aqui)</a> — e sobre <strong>rectify</strong> — uma abordagem que considera eventuais informações contidas nos erros de previsão <a href="http://rleripio.com.br/post/melhorando-previsoes-a-partir-dos-erros-a-estrategia-rectify/">(ver aqui)</a>. Em todos os casos considerei apenas um único modelo para realizar as previsões. Porém, com frequência temos à disposição mais de um modelo para a mesma variável. Neste caso, o que fazer?</p>
+
+<p>Uma estratégia muito comum consiste em combinar previsões de diversos modelos. Isso não é novidade e vem sendo explorado desde o paper seminal de Bates e Granger em 1969, <em>“The combination of forecasts“</em>, com resultados bastante promissores. Entretanto, a estratégia parece ter definido um novo padrão no campo de previsões uma vez que <strong>12 dos 17 modelos mais acurados na competição M4 foram combinações</strong>. Isto se deve, em grande medida, ao menor risco de repousar exclusivamente em um modelo mal especificado ou com baixa capacidade de adaptação a novos eventos.</p>
+
+<p>Existem diversas estratégias para combinar previsões. As abordagens mais comuns utilizam alguma medida como média simples/mediana ou fazem uso de alguma combinação linear das previsões, conforme a expressão abaixo:</p>
+
+<p><span  class="math">\[ y^{FC}_{t} = \alpha_1 y_{1,t}^{FC} + \alpha_2 y_{2,t}^{FC} + ... + \alpha_k y_{k,t}^{FC} = \sum_i^k \alpha_i y_{i,t}^{FC} \]</span></p>
+
+<p>em que $y_{i,t}^{FC}$ é a previsão do modelo $i$ para o período $t$.</p>
+
+<p>Os pesos, $\alpha_i$, podem ser definidos de diversas formas. Em geral, considera-se alguma medida do erro de previsão de cada modelo, dando menor peso ao modelo que historicamente errou mais; ou então obtém-se os pesos através da minimização de alguma função perda (RMSFE, MSFE, etc). Métodos mais sofisticados permitem, por exemplo, mudanças no valor dos parâmetros ao longo do tempo e até mesmo a utilização de algoritmos de Machine Learning para aprender o valor destes parâmetros.</p>
+
+<p>Neste post, vou considerar quatro modelos univariados: <strong>ETS</strong>, <strong>CES</strong> (complex exponential smoothing), <strong>ARIMA</strong> e <strong>DOTM</strong> (dynamic optimised theta). A primeira abordagem para combinação será computar a mediana das projeções individuais. A escolha conjunta destes modelos e da mediana para combinação não é arbitrária, mas segue a proposta de <a href="https://www.sciencedirect.com/science/article/pii/S0169207019300585">Petropoulos e Svetunkov (2019, IJF)</a>, a qual, embora simples, obteve excelentes resultados. A segunda abordagem para combinação considera os mesmos modelos e pesos $\alpha_i$ que minimizam o RMSFE (root mean squared forecast error), de acordo com:</p>
+
+<p><span  class="math">\[ min_{\alpha_i} \frac{\sum_{t = 1}^{T} ( y_t - \sum_i^{k} \alpha_i y_{i,t}^{FC} )^2}{n} \]</span></p>
+
+<p>Os leitores mais familiarizados vão notar que este problema pode ser reduzido à uma regressão linear entre o y observado em $t$ e as projeções de cada um dos modelos para o mesmo $t$. Em especial, ao elevar ao quadrado os resíduos da regressão, calcular a média e extrair a raiz, obteremos o RMSFE. Entretanto, para deixar o tratamento mais geral, vou considerar o problema de otimização acima. Adicionalmente, para que os coeficientes $\alpha_i$ sejam não-negativos e somem um, vou aplicar uma transformação sobre eles utilizando a função <strong>softmax</strong>. O objetivo é deixar mais intuitiva a noção de pesos. Portanto, os coeficientes $\alpha_i$ padronizados serão dados por:</p>
+
+<p><span  class="math">\[ \bar{\alpha_i} = \frac{e^{\alpha_i}}{\sum_i^k e^{\alpha_i}} \]</span></p>
+
+<p>Por fim, vamos comparar os resultados dos modelos individuais com aqueles obtidos através das combinações. Antes de começarmos, é preciso chamar atenção para três pontos. Em primeiro lugar, como quase tudo em forecasting, as evidências que apontam vantagem de previsões combinadas sobre as individuais são obtidas ao aplicar o método sobre um grande conjunto de séries. Ou seja, a superioridade dos métodos de combinação vale na média e não necessariamente para todos os casos particulares.</p>
+
+<p>Em segundo lugar, a combinação de modelos pressupõe que os modelos gerem previsões não-viesadas. Caso contrário, o viés de um dos modelos acaba contaminando a previsão combinada. Por esta razão, incluir uma constante no problema de otimização pode melhorar o resultado, uma vez que captura algum eventual viés.</p>
+
+<p>Por último, é preciso ter cuidado ao avaliar o poder preditivo dos modelos. No caso da combinação linear, como precisamos gerar previsões para calcular o valor dos pesos $\alpha_i$, vamos separar uma parte da amostra para validação. Para ficar mais claro, faremos o seguinte:</p>
+
+<ol>
+<li>A amostra de treino será utilizada para computar as projeções de cada método;</li>
+<li>O peso de cada método será computado tendo como referência o poder preditivo sobre a amostra de validação;</li>
+<li>Os pesos obtidos na etapa 2 serão utilizados para combinar as projeções obtidas na amostra de treino ampliada (treino+validação).</li>
+<li>Estas projeções da etapa 3 serão comparadas com os valores da amostra de teste.</li>
+</ol>
+
+<p>Entendido o exercício, abra o R e acompanhe!</p>
+
+<p><strong>Passo 1: carregar os pacotes necessários, importar os dados e definir as amostras.</strong> Para esta aplicação, vamos utilizar a série do núcleo do IPCA EX-3, calculado pelo BCB (SGS 27839).</p>
+
+<pre><code class="language-r"># 1. Carregar bibliotecas
+
+library(tidyverse)
+library(rbcb) # Para instalar: devtools::install_github(&quot;wilsonfreitas/rbcb&quot;)
+library(forecast) 
+library(smooth) 
+library(forecTheta) 
+library(knitr)
+
+# 2. Importar dados dados
+
+dados &lt;- rbcb::get_series(list(&quot;ipca_ex3&quot; = 27839), 
+                          start_date = &quot;2006-07-01&quot;, 
+                          end_date = &quot;2019-05-01&quot;) 
+dados_ts &lt;- ts(dados$ipca_ex3, start = c(2006,7), freq = 12) 
+
+# 3. Separar as amostras (cerca de 55% para treino, 30% para validação e 15% para teste) 
+
+dados_treino &lt;- window(dados_ts, end = c(2013,7)) 
+dados_valida &lt;- window(dados_ts, start = c(2013,8), end = c(2017,5)) 
+dados_teste &lt;- window(dados_ts, start = c(2017,6)) 
+</code></pre>
+
+<p><strong>Passo 2: realizar as projeções individuais para cada modelo com horizonte igual ao período de validação.</strong> Estes dados serão utilizados para estimar os pesos.</p>
+
+<pre><code class="language-r">modelo_i &lt;- list(
+
+  &quot;ets&quot; = function(x,h) forecast(ets(x, lambda = &quot;auto&quot;), h = h),
+  &quot;ces&quot; = function(x,h) forecast(smooth::auto.ces(x), h = h),
+  &quot;arima&quot; = function(x,h) forecast(auto.arima(x), h = h),
+  &quot;dotm&quot; = function(x,h) forecTheta::dotm(x, h = h)
+)
+
+fc_i &lt;- purrr::invoke_map(.f = modelo_i, 
+                          .x = list(dados_treino), 
+                          h = length(dados_valida))
+
+fc_i_mean &lt;- purrr::map_dfc(.x = fc_i, .f = function(x) x[[&quot;mean&quot;]]) %&gt;% 
+             dplyr::mutate(y_valida = dados_valida)
+</code></pre>
+
+<p><strong>Passo 3: computar os parâmetros que minimizam a RMSFE e normalizá-los.</strong> Aqui, como eram apenas 4 modelos eu abri o somatório para ficar mais claro. Para o caso de um conjunto grande de modelos, o ideal é substituir por uma operação matricial.</p>
+
+<pre><code class="language-r">msfe_comb &lt;- function(x){
+
+  alpha_ets &lt;- x[1]
+  alpha_ces &lt;- x[2]
+  alpha_arima &lt;- x[3]
+  alpha_dotm &lt;- x[4]
+
+  ((fc_i_mean$y_valida - alpha_ets*fc_i_mean$ets - alpha_ces*fc_i_mean$ces - 
+    alpha_arima*fc_i_mean$arima - alpha_dotm*fc_i_mean$dotm)^2) %&gt;% 
+  
+  mean() %&gt;% 
+  
+  sqrt()
+
+  }
+
+pesos &lt;- optim(c(1,1,1,1), msfe_comb)
+
+pesos_norm &lt;- round(exp(pesos$par)/sum(exp(pesos$par)), 3)
+</code></pre>
+
+<p><strong>Passo 4: realizar as projeções combinadas utilizando os parâmetros estimados e a mediana</strong>. Em seguida, comparar com as realizações da amostra de teste.</p>
+
+<pre><code class="language-r">dados_treino_amplo &lt;- window(dados_ts, end = c(2017,5))
+
+fc_i_amplo &lt;- purrr::invoke_map(.f = modelo_i, 
+                                .x = list(dados_treino_amplo), 
+                                h = length(dados_teste))
+fc_i_mean_amplo &lt;- purrr::map_dfc(.x = fc_i_amplo, 
+                                  .f = function(x) x[[&quot;mean&quot;]]) %&gt;%
+
+  dplyr::mutate(&quot;y_teste&quot; = dados_teste) %&gt;%
+
+  dplyr::rowwise() %&gt;%
+
+  dplyr::mutate(&quot;Mediana&quot; = median(c(ets,ces,arima,dotm))) %&gt;%
+
+  dplyr::ungroup() %&gt;%
+
+  dplyr::mutate(&quot;Otimização&quot; = pesos_norm[1]*ets + pesos_norm[2]*ces + 
+                             pesos_norm[3]*arima + pesos_norm[4]*dotm)
+
+fc_i_acc &lt;- fc_i_mean_amplo %&gt;% 
+  
+  dplyr::summarise_at(vars(-y_teste), 
+                      funs(forecast::accuracy(., y_teste)[, &quot;RMSE&quot;]))
+</code></pre>
+
+<p>As medidas de acurácia são exibidas na tabela abaixo. A estratégia de combinação através da mediana apresentou o melhor resultado, superando ligeiramente os modelos CES e ETS. A combinação através de otimização, por sua vez, não foi capaz de bater todos os modelos individuais. Mais especificamente, o bom desempenho do modelo arima no período de validação fez com que este recebesse um peso mais elevado. Entretanto, essa vantagem não se materializou no período de teste. Isto reforça a necessidade de reavaliar modelos e estratégias de tempos em tempos, sobretudo quando ocorrem mudanças estruturais na série de interesse -- como foi o caso do IPCA EX-3. Por outro lado, também reforça a capacidade de estratégias que utilizam medidas de tendência menos sensíveis a extremos -- como a mediana -- em responder melhor a ambientes mais incertos.</p>
+
+<table>
+<thead>
+<tr>
+<th align="left">Modelo</th>
+<th align="right">RMSFE</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="left">Mediana</td>
+<td align="right">0.121</td>
+</tr>
+
+<tr>
+<td align="left">ces</td>
+<td align="right">0.123</td>
+</tr>
+
+<tr>
+<td align="left">ets</td>
+<td align="right">0.123</td>
+</tr>
+
+<tr>
+<td align="left">dotm</td>
+<td align="right">0.131</td>
+</tr>
+
+<tr>
+<td align="left">Otimização</td>
+<td align="right">0.143</td>
+</tr>
+
+<tr>
+<td align="left">arima</td>
+<td align="right">0.184</td>
+</tr>
+</tbody>
+</table>
+
+<p>O gráfico abaixo apresenta as observações para o IPCA EX-3 da amostra de teste e as previsões pontuais geradas pelos dois métodos de combinação. Vale ressaltar que uma análise mais rigorosa levaria em conta também a performance para cada horizonte. Também fica claro ao observar o gráfico que os picos e vales mais pronunciados podem ter um papel relevante sobre a magnitude da medida RMSFE. Uma boa prática seria considerar medidas alternativas, sobretudo aquelas mais robustas a este tipo de situação. Pretendo abordar isso em algum momento.</p>
+
+<p><img src="2019-07-11-combinando-modelos-de-previsão_files/figure-html/unnamed-chunk-6-1.png" width="3600" /></p>
+
+<p>Por fim, cabe notar que intervalo de confiança nesses casos não é trivial, uma vez que é preciso obter uma expressão para a variância da combinação das previsões, o que requer computar as covariâncias entre os erros dos modelos. Uma solução conservadora é utilizar o intervalo mais amplo dos modelos individuais, porém não me agrada muito. Talvez possamos voltar nesse ponto em uma próxima oportunidade.</p>
+
+<p><strong>Sugestão</strong>: Para os interessados em aplicar metodologias de combinação de previsões, existem alguns pacotes disponíveis para R. Dois deles (opera e ForecastHybrid) são tratados neste post do Rob. Hyndman: <a href="https://robjhyndman.com/hyndsight/forecast-combinations/">https://robjhyndman.com/hyndsight/forecast-combinations/</a></p>
+
+<p>Os códigos dos exercícios encontram-se disponíveis no <a href="http://github.com/leripio/blog">repositório</a> do blog no github.</p>
+
+<p><strong>Aviso legal</strong>: Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.</p>
+
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="/tags/combinacao/">combinação</a>
+  
+  <a class="badge badge-light" href="/tags/previsao/">Previsão</a>
+  
+  <a class="badge badge-light" href="/tags/otimizacao/">otimização</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card" itemscope itemtype="http://schema.org/Person">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7eeb0c2576d20c67059d97d4d4326638_182584_250x250_fill_q90_lanczos_center.jpg" itemprop="image" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title" itemprop="name"><a href="/">J. Renato Leripio</a></h5>
+      <h6 class="card-subtitle">Quantitative Research Analyst</h6>
+      <p class="card-text" itemprop="description">Analista de pesquisa quantitativa na Itaú Asset Management.</p>
+      <ul class="network-icon" aria-hidden="true">
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+          <li>
+            <a itemprop="sameAs" href="mailto:leripiorenato@gmail.com" >
+              <i class="fas fa-envelope"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://github.com/leripio" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://www.linkedin.com/in/leripiorenato/" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://drive.google.com/open?id=1NPyKAEGKCpVOrQu1evo4YI7JslX5Tnpm" target="_blank" rel="noopener">
+              <i class="ai ai-cv"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+
+      
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Relacionados</h3>
+        <ul>
+          
+          <li><a href="/post/como-aprimorar-previsoes-uma-aplicacao-com-bootstrap/">Como aprimorar previsões: uma aplicação com bootstrap</a></li>
+          
+        </ul>
+      </div>
+      
+    
+
+    
+
+    
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/r.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    <script>
+      const search_index_filename = "/index.json";
+      const i18n = {
+        'placeholder': "Pesquisar...",
+        'results': "Resultados encontrados",
+        'no_results': "Sem resultados"
+      };
+      const content_type = {
+        'post': "Posts",
+        'project': "Projetos",
+        'publication' : "Publicações",
+        'talk' : "Palestras"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.16bbb3750feb7244c9bc409a5a4fe678.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" id="back_to_top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Citação</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copiar
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

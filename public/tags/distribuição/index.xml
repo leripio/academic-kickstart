@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>distribuição | RLeripio</title>
+    <link>/tags/distribui%C3%A7%C3%A3o/</link>
+      <atom:link href="/tags/distribui%C3%A7%C3%A3o/index.xml" rel="self" type="application/rss+xml" />
+    <description>distribuição</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Mon, 29 Jul 2019 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/img/logo.png</url>
+      <title>distribuição</title>
+      <link>/tags/distribui%C3%A7%C3%A3o/</link>
+    </image>
+    
+    <item>
+      <title>Tales from tails: analisando o risco em previsoes</title>
+      <link>/post/tales-from-tails-analisando-o-risco-em-previsoes/</link>
+      <pubDate>Mon, 29 Jul 2019 00:00:00 +0000</pubDate>
+      <guid>/post/tales-from-tails-analisando-o-risco-em-previsoes/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;http://rleripio.com.br/combinando-modelos-de-previsao/&#34; target=&#34;_blank&#34;&gt;&lt;em&gt;No post anterior&lt;/em&gt;&lt;/a&gt;, tratei de estratégias para combinar modelos de previsão a fim de obter melhores resultados. Melhor resultado, naquele contexto, significava apresentar menor &lt;strong&gt;Root mean square forecast error (RMSFE)&lt;/strong&gt;.É muito comum &amp;ndash; tanto na literatura como na prática &amp;ndash; utilizar esta medida ou outras semelhantes que envolvam médias dos desvios quadráticos ou absolutos dos erros, por exemplo MSE, MSPE, MASE, MAPE, etc. &lt;strong&gt;Sabe-se, contudo, que médias são muito sensíveis a valores extremos.&lt;/strong&gt; Portanto, um único valor extremo no conjunto de erros de previsão é capaz de elevar de maneira significativa aquelas estatísticas. Dito de outra forma, um modelo relativamente bom pode ser descartado porque apresentou uma única previsão ruim. Por esta razão, ganhou popularidade medidas que substituem a média pela mediana naquelas estatísticas anteriores. Os interessados em entender melhor as características destas medidas podem recorrer ao artigo de Hyndman e Koehler (2006): &lt;a href=&#34;https://robjhyndman.com/papers/mase.pdf&#34; target=&#34;_blank&#34;&gt;&lt;em&gt;&amp;ldquo;Another look at measures of forecast accuracy&amp;rdquo;&lt;/em&gt;&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Neste ponto, eu gostaria de chamar atenção para uma coisa muito importante: &lt;strong&gt;a estatística de acurácia utilizada para ranquear modelos é uma função-perda e, como tal, reflete o objetivo que se pretende alcançar.&lt;/strong&gt;Se o objetivo é reter o modelo que, em geral, não apresenta previsões muito distantes das realizações, as medidas consideradas até agora são razoáveis. Por outro lado, imagine que a previsão seja para o estoque de uma empresa ou para uma variável que define uma posição de investimento. &lt;strong&gt;Nestes casos, o risco da previsão importa.&lt;/strong&gt;Em outras palavras, pode não fazer muito sentido escolher um modelo que, apesar de ter bom desempenho na média/mediana, apresenta maiores chances de valores extremos. No caso da empresa, tanto o excesso quanto a falta de estoque em níveis elevados pode comprometer as operações; igualmente catastrófico pode ser a realização muito abaixo/acima do previsto para uma variável-chave para o investidor.
+Para usar um exemplo real, vamos considerar a mesma variável utilizada no post anterior: o núcleo do IPCA EX-3. A amostra vai de julho de 2006 a maio de 2019 e contém 155 observações. Os modelos utilizados foram ARIMA, ETS, CES e DOTM &amp;ndash; todos vistos naquela ocasião &amp;ndash; e os erros de previsão um passo à frente computados a partir de validação-cruzada com uma janela móvel de 60 observações &amp;ndash; o que totalizou cerca de 95 pontos de erro para cada modelo. As densidades dos erros de previsão para cada modelo são apresentadas abaixo:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;# 1. Carregar pacotes
+library(tidyverse)
+library(rbcb) # devtools::install_github(&amp;quot;wilsonfreitas/rbcb&amp;quot;)
+library(forecast)
+library(smooth)
+library(forecTheta)
+library(ggrepel)
+# 2. Importar dados dados 
+dados &amp;lt;- rbcb::get_series(list(&amp;quot;ipca_ex3&amp;quot; = 27839), end_date = &amp;quot;2019-05-01&amp;quot;) 
+dados_ts &amp;lt;- ts(dados$ipca_ex3, start = c(2006,7), freq = 12) 
+# 4. Ajustar modelos
+modelo_i &amp;lt;- list(
+  
+  &amp;quot;ets&amp;quot; = function(x,h) forecast(ets(x, lambda = &amp;quot;auto&amp;quot;), h = h),
+  
+  &amp;quot;ces&amp;quot; = function(x,h) forecast(smooth::auto.ces(x), h = h),
+  
+  &amp;quot;arima&amp;quot; = function(x,h) forecast(auto.arima(x), h = h),
+  
+  &amp;quot;dotm&amp;quot; = function(x,h) forecTheta::dotm(x, h = h)
+  
+)
+# 5. Calcular os erros das previsões por validação-cruzada
+fc_cv &amp;lt;- purrr::map2(.f = forecast::tsCV, .x = list(dados_ts), .y = modelo_i, 
+                     h = 1, window = 60)
+fc_cv_aux &amp;lt;- fc_cv %&amp;gt;%
+  
+  magrittr::set_names(names(modelo_i)) %&amp;gt;%
+  
+  dplyr::bind_cols() %&amp;gt;%
+  
+  tidyr::drop_na() %&amp;gt;%
+  
+  tibble::rownames_to_column(var = &amp;quot;n&amp;quot;) %&amp;gt;%
+  
+  dplyr::mutate(n = as.integer(n) %&amp;gt;% as.factor()) %&amp;gt;%
+  
+  tidyr::gather(key = modelo, value = erro, -n)
+# 6. Gerar gráfico de densidade dos erros
+fc_cv_aux %&amp;gt;%
+  
+  ggplot(aes(x = erro)) +
+  
+  geom_density(position = &amp;quot;stack&amp;quot;, fill = &amp;quot;steelblue3&amp;quot;, color = &amp;quot;steelblue3&amp;quot;, 
+               alpha = 0.3) +
+  
+  facet_wrap(~ modelo) +
+  
+  labs(title = &amp;quot;Densidade dos erros de previsão&amp;quot;, 
+       x = &amp;quot;&amp;quot;, y = &amp;quot;&amp;quot;, caption = &amp;quot;Elaboração: rleripio.com.br&amp;quot;) +
+  
+  xlim(-0.6, 0.6)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;2019-09-03-tales-from-tails-analisando-o-risco-em-previsoes_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;672&#34; /&gt;
+De modo geral, todas as distribuições apresentam maior ocorrência em torno do zero, o que sugere que medidas que computam a tendência central devem ter desempenho mais ou menos parecido. Porém, cabe notar que a cauda das distribuições têm formatos bem diferentes: os erros do modelo ETS têm a cauda da direita maior que a do modelo DOTM e CES, por exemplo. É justamente neste aspecto que reside a ideia de risco: &lt;strong&gt;a probabilidade de eventos extremos é maior ou menor de acordo com a área destas caudas&lt;/strong&gt;. Para traduzir isso de forma mais objetiva, o gráfico abaixo traz três medidas: duas de tendência central &amp;ndash; Root mean square forecast error (RMSFE) e Root median square forecast error (RMedSFE) &amp;ndash; e uma de risco: os limites da área com probabilidade de 10% à direita e à esquerda &amp;ndash; esta última em valor absoluto para ficar mais fácil de visualizar com as demais.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;# 7. Calcular as estatísticas de acurácia
+fc_cv_acc &amp;lt;- fc_cv_aux %&amp;gt;%
+  
+  dplyr::group_by(modelo) %&amp;gt;%
+  
+  dplyr::summarise(RMSFE = erro %&amp;gt;% `^`(2) %&amp;gt;% mean() %&amp;gt;% sqrt(),
+                   RMedSFE = erro %&amp;gt;% `^`(2) %&amp;gt;% median() %&amp;gt;% sqrt(),
+                   &amp;quot;High 10&amp;quot; = quantile(erro, probs = 0.90),
+                   &amp;quot;Low 10 (abs)&amp;quot; = quantile(erro, probs = 0.10)) %&amp;gt;%
+  
+  dplyr::mutate_at(vars(-modelo), ~ round(., 3))
+# 8. Gerar gráfico
+fc_cv_acc %&amp;gt;%
+  
+  tidyr::gather(key = medida, value = valor, -modelo) %&amp;gt;%
+  
+  dplyr::mutate(medida = factor(medida, levels = c(&amp;quot;RMSFE&amp;quot;, &amp;quot;RMedSFE&amp;quot;, 
+                                                   &amp;quot;Low 10 (abs)&amp;quot;, &amp;quot;High 10&amp;quot;))) %&amp;gt;%
+  
+  ggplot(aes(x = medida, y = abs(valor), fill = modelo)) +
+  
+  geom_col(position = position_dodge()) +
+  
+  scale_fill_brewer(type = &amp;quot;div&amp;quot;, palette = 1) +
+  
+  theme_minimal() +
+  
+  labs(x = &amp;quot;&amp;quot;, y = &amp;quot;&amp;quot;, fill = &amp;quot;&amp;quot;,
+       title = &amp;quot;Estatísticas para os erros de previsão&amp;quot;,
+       caption = &amp;quot;Elaboração: rleripio.com.br&amp;quot;) +
+  
+  geom_text_repel(aes(label = modelo), position = position_dodge(width = 1), 
+                  angle = 0, size = 5, hjust = -0., vjust = 0.7) +
+  
+  theme(legend.position = &amp;quot;none&amp;quot;,
+        axis.text.x = element_text(size = 12))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;2019-09-03-tales-from-tails-analisando-o-risco-em-previsoes_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;1152&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;O primeiro ponto a notar é que existe diferença na classificação quando consideramos a média ou a mediana. Pelo RMSFE, a escolha seria pelo DOTM, ao passo que pelo RMedSFE o modelo escolhido seria o CES. Por outro lado, se quiséssemos reduzir as chances de valores extremos &amp;ndash; tanto para cima quanto para baixo &amp;ndash; o DOTM seria a escolha inequívoca. Fica claro, portanto, a relevância de utilizar medidas aderentes aos objetivos da previsão. Adicionalmente, é sempre uma boa ideia comparar medidas alternativas para cada objetivo.&lt;/p&gt;
+
+&lt;p&gt;Por fim, uma questão interessante que se coloca é: &lt;strong&gt;não é possível ter uma única medida capaz de sumarizar tanto a acurácia como o risco em um modelo de previsão?&lt;/strong&gt; A resposta parece ser positiva. No artigo &lt;a href=&#34;https://www.sciencedirect.com/science/article/pii/S0169207018301547&#34; target=&#34;_blank&#34;&gt;&lt;em&gt;Tales from tails: On the empirical distributions of forecasting errors and their implication to risk&lt;/em&gt;&lt;/a&gt;, os autores propõem uma medida chamada Risk measure (RM). A ideia é relativamente simples: aplica-se uma transformação do tipo Box-Cox sobre a distribuição dos erros de previsão a fim de normalizá-los e em seguida calcula-se a medida que é a soma da média com o desvio-padrão da distribuição transformada. Ao fim, a transformação é revertida. A tabela abaixo computa uma versão da medida RM para os erros de previsão dos modelos (transformados via Box-Cox) em conjunto com o p-valor associado ao teste Shapiro de normalidade.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;fc_cv_aux_bc &amp;lt;- fc_cv_aux %&amp;gt;%
+  
+  dplyr::group_by(modelo) %&amp;gt;%
+  
+  dplyr::mutate(erro_bc = forecast::BoxCox(erro, lambda = &amp;quot;auto&amp;quot;))
+fc_cv_rm &amp;lt;- fc_cv_aux_bc %&amp;gt;%
+  
+  dplyr::summarise(MAE = mean(abs(erro_bc)),
+                   SD = sd(erro_bc),
+                   RM = InvBoxCox(MAE + SD, lambda = forecast::BoxCox.lambda(erro)),
+                   shapiro_bc = shapiro.test(erro_bc)$p.value) %&amp;gt;%
+  
+  dplyr::mutate_at(vars(-modelo), ~ round(., 2)) %&amp;gt;%
+  
+  dplyr::arrange(RM)
+knitr::kable(fc_cv_rm)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;left&#34;&gt;modelo&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;MAE&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;SD&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;RM&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;shapiro_bc&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;dotm&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.94&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.11&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2.03&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.02&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;ces&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.31&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.26&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2.79&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.93&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;arima&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.41&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3.09&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.06&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;ets&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3.02&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.23&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;13.48&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;O problema é que nem sempre a distribuição transformada é normal. O modelo DOTM apresentou a menor RM, porém os resultados não são significativos uma vez que somente a distribuição dos erros do modelo CES &amp;ndash; e com alguma &amp;ldquo;boa vontade&amp;rdquo; a do ARIMA &amp;ndash; se aproximou de uma distribuição normal. &lt;strong&gt;De fato, em termos de p-valor, a distribuição original dos erros apresentou resultados melhores para o teste de normalidade: respectivamente 0.14, 0.15, 0.11 e 0.02.&lt;/strong&gt; Ainda assim, o ideal seria ter p-valores maiores para dar mais segurança.&lt;/p&gt;
+
+&lt;p&gt;Ficou alguma dúvida ou tem sugestões? Entre em &lt;a href=&#34;mailto:leripiorenato@gmail.com&#34; target=&#34;_blank&#34;&gt;contato&lt;/a&gt;!&lt;/p&gt;
+
+&lt;p&gt;Os códigos dos exercícios encontram-se disponíveis no &lt;a href=&#34;https://github.com/leripio/blog&#34; target=&#34;_blank&#34;&gt;repositório do blog no github.&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Siga nossa página RLeripio – Economia e Data Science no Facebook e fique sabendo de todas as nossas publicações!&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Aviso legal&lt;/strong&gt;: Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

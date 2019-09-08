@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags | RLeripio</title>
+    <link>/tags/</link>
+      <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+    <description>Tags</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Fri, 09 Aug 2019 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/img/logo.png</url>
+      <title>Tags</title>
+      <link>/tags/</link>
+    </image>
+    
+    <item>
+      <title>combinação</title>
+      <link>/tags/combinacao/</link>
+      <pubDate>Fri, 09 Aug 2019 00:00:00 +0000</pubDate>
+      <guid>/tags/combinacao/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Previsão</title>
+      <link>/tags/previsao/</link>
+      <pubDate>Fri, 09 Aug 2019 00:00:00 +0000</pubDate>
+      <guid>/tags/previsao/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Redes neurais</title>
+      <link>/tags/redes-neurais/</link>
+      <pubDate>Fri, 09 Aug 2019 00:00:00 +0000</pubDate>
+      <guid>/tags/redes-neurais/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>vix</title>
+      <link>/tags/vix/</link>
+      <pubDate>Fri, 09 Aug 2019 00:00:00 +0000</pubDate>
+      <guid>/tags/vix/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>distribuição</title>
+      <link>/tags/distribuicao/</link>
+      <pubDate>Mon, 29 Jul 2019 00:00:00 +0000</pubDate>
+      <guid>/tags/distribuicao/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>risco</title>
+      <link>/tags/risco/</link>
+      <pubDate>Mon, 29 Jul 2019 00:00:00 +0000</pubDate>
+      <guid>/tags/risco/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>risk measure</title>
+      <link>/tags/risk-measure/</link>
+      <pubDate>Mon, 29 Jul 2019 00:00:00 +0000</pubDate>
+      <guid>/tags/risk-measure/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>otimização</title>
+      <link>/tags/otimizacao/</link>
+      <pubDate>Thu, 11 Jul 2019 00:00:00 +0000</pubDate>
+      <guid>/tags/otimizacao/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>bagging</title>
+      <link>/tags/bagging/</link>
+      <pubDate>Thu, 13 Sep 2018 00:00:00 +0000</pubDate>
+      <guid>/tags/bagging/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>bootstrap</title>
+      <link>/tags/bootstrap/</link>
+      <pubDate>Thu, 13 Sep 2018 00:00:00 +0000</pubDate>
+      <guid>/tags/bootstrap/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

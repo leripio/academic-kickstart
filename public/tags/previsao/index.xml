@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Previsão | RLeripio</title>
+    <link>/tags/previsao/</link>
+      <atom:link href="/tags/previsao/index.xml" rel="self" type="application/rss+xml" />
+    <description>Previsão</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Fri, 09 Aug 2019 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/img/logo.png</url>
+      <title>Previsão</title>
+      <link>/tags/previsao/</link>
+    </image>
+    
+    <item>
+      <title>Utilizando redes neurais para combinar modelos</title>
+      <link>/post/utilizando-redes-neurais-para-combinar-modelos/</link>
+      <pubDate>Fri, 09 Aug 2019 00:00:00 +0000</pubDate>
+      <guid>/post/utilizando-redes-neurais-para-combinar-modelos/</guid>
+      <description>&lt;p&gt;No post &lt;a href=&#34;http://rleripio.com.br/post/combinando-modelos-de-previsao/&#34; target=&#34;_blank&#34;&gt;&amp;ldquo;Combinando modelos de previsão&amp;rdquo;&lt;/a&gt;, apresentei duas formas simples de combinar modelos de previsão. A primeira delas envolvia obter uma combinação linear das previsões individuais de cada modelo, através de um método de otimização (OLS, por exemplo, ou equivalente). O segundo método utilizava a mediana das projeções dos modelos individuais. Embora operacionalmente mais simples, esta última abordagem performou melhor que a anterior &amp;ndash; um resultado nada surpreendente, pois existe literatura mostrando que é mesmo difícil obter resultados melhores que a combinação por mediana daqueles modelos empregados.&lt;/p&gt;
+
+&lt;p&gt;Combinação de modelos tornou-se um novo paradigma em previsões. Conforme citado naquele post:&lt;/p&gt;
+
+&lt;p&gt;[&amp;hellip;] a estratégia parece ter definido um novo padrão no campo de previsões uma vez que &lt;strong&gt;12 dos 17 modelos mais acurados na competição M4 foram combinações&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;Na ocasião, mencionei também que haviam formas mais sofisticadas de combinar modelos. Segue a passagem:&lt;/p&gt;
+
+&lt;p&gt;[&amp;hellip;] Métodos mais sofisticados permitem, por exemplo, mudanças no valor dos parâmetros ao longo do tempo e até mesmo a utilização de &lt;strong&gt;algoritmos de Machine Learning&lt;/strong&gt; para aprender o valor destes parâmetros.&lt;/p&gt;
+
+&lt;p&gt;O post de hoje busca justamente isso: utilizar uma &lt;strong&gt;rede neural&lt;/strong&gt; para combinar modelos. Para isto, vamos utilizar aqueles mesmos quatro modelos: &lt;strong&gt;CES&lt;/strong&gt;, &lt;strong&gt;ETS&lt;/strong&gt;, &lt;strong&gt;DOTM&lt;/strong&gt; e &lt;strong&gt;ARIMA&lt;/strong&gt;. Entretanto, optei desta vez por utilizar a série temporal do índice VIX, divulgado pelo CBOE (Chicago Board Options Exchange). Para os menos familiarizados, o índice VIX busca medir a volatilidade esperada na bolsa americana. A escolha da série, dentre outros motivos, justifica-se por seu tamanho: 355 observações mensais. Sabe-se que redes neurais são &lt;em&gt;data hungry&lt;/em&gt;, logo séries curtas podem não apresentar bons resultados. A principal vantagem de utilizar uma rede neural para aprender qual a melhor forma de combinar os modelos é sua flexibilidade, isto é, os pesos atribuídos a cada modelo poderá ser uma função não-linear, potencialmente complexa.&lt;/p&gt;
+
+&lt;p&gt;Entendido o objetivo, vamos iniciar o exercício. De modo a poder contar com um número maior de observações, criei a amostra da seguinte forma:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Computei as projeções um-passo-à-frente de cada modelo através de validação-cruzada. Utilizando uma janela móvel de 100 observações para as projeções, obtive um total próximo a 250 previsões (fora da amostra).&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Desta amostra, separei cerca de 70% para treino e 30% para teste. A amostra de treino foi utilizada para calcular os pesos por OLS e também para treinar a Rede Neural. A combinação por mediana foi calculada diretamente sobre a amostra de teste, pois não envolve nenhuma estimativa de parâmetros.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Por fim, foram computados o Mean Squared Error (MSE) de todos os métodos.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Os resultados seguem abaixo. Diferente dos resultados do post anterior, a mediana não foi capaz de superar todos os modelos individuais. Isto, provavelmente, é consequência de existirem dois modelos cujas performances se distanciam bastante dos demais &amp;ndash; ARIMA e CES.&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;left&#34;&gt;modelo&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;MSE&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;dotm&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.041486&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;ets&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.090884&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;mediana&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.110720&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;arima&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.358005&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;ces&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;10.519399&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;A combinação, por sua vez, também não foi capaz de entregar resultados superiores. Em outras palavras, na presença de modelos ruins, métodos mais convencionais de combinação tendem a não performar muito bem.&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;left&#34;&gt;modelo&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;MSE&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;dotm&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.041486&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;ets&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.090884&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;mediana&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.110720&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;combinação&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.175815&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;arima&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.358005&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;ces&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;10.519399&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;E o que dizer da combinação através da rede neural? Antes de apresentar o resultado, vou descrever um pouco melhor a especificação utilizada. A rede neural usada aqui é do tipo &lt;em&gt;feed forward&lt;/em&gt;, com quatro &lt;em&gt;layers&lt;/em&gt; contendo 16 &lt;em&gt;units&lt;/em&gt; cada. As funções de ativação dos três primeiros &lt;em&gt;layers&lt;/em&gt; é &lt;em&gt;relu&lt;/em&gt;, enquanto a do último é &lt;em&gt;linear&lt;/em&gt;. No total, foram treinados 641 parâmetros. &lt;strong&gt;A combinação através da rede neural retornou um MSE de 4.49&lt;/strong&gt;, cerca de metade daquele reportado pelo melhor modelo individual &amp;ndash; DOTM. O resultado é muito bom, mas valem alguns avisos. O primeiro é usual, mas nunca demais repetir: não necessariamente este aumento de performance vai acontecer para qualquer série. O segundo é mais específico: o treinamento de redes neurais envolve alguns processos estocásticos, de modo que pode ocorrer instabilidade nos parâmetros estimados e, portanto, sobre a própria acurácia do modelo. Uma solução seria treinar a rede neural um grande número de vezes e reportar a acurácia mediana. Obviamente isto envolve um grande custo operacional.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;2019-08-09-utilizando-redes-neurais-para-combinar-modelos_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;864&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;O que chama mais atenção nos resultados é a capacidade da rede neural em evitar as projeções mais acentuadas para baixo. Note que em diversos casos isto faz com que a projeção se distancie muito do valor realizado. A princípio, tudo indica que a rede neural foi capaz de aprender a não dar muito peso para o modelo (ou os modelos) com essa tendência de subestimar demais a série em certos momentos. Adicionalmente, a combinação através da rede neural também não superestima demais alguns valores. Em suma, parece que em situações mais usuais ambos os métodos são razoáveis. Porém, na presença de desvios mais acentuados, a rede neural é capaz de entregar resultados mais próximos do observado. Essa é uma virtude importante, sobretudo por se tratar de uma série que mede volatilidade e, portanto, apresenta regiões mais &amp;ldquo;nervosas&amp;rdquo;. Neste caso, é importante que o modelo não perca a mão quando esse momento aparecer.&lt;/p&gt;
+
+&lt;p&gt;Por fim, uma possível estratégia para melhorar o método de combinação linear ou de mediana seria remover aquele modelo com desempenho muito ruim &amp;ndash; no nosso caso, o CES. Uma generalização desse processo seria estimar diversos (ou todos) subconjuntos de modelos, calcular a acurácia da combinação de cada subconjunto e selecionar aquele com melhor poder preditivo. Talvez possamos abordar isso numa próxima oportunidade.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Os códigos dos exercícios&lt;/strong&gt; encontram-se disponíveis no &lt;a href=&#34;https://github.com/leripio/blog&#34; target=&#34;_blank&#34;&gt;repositório do blog no github&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Aviso legal:&lt;/strong&gt; Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Tales from tails: analisando o risco em previsões</title>
+      <link>/post/tales-from-tails-analisando-o-risco-em-previsoes/</link>
+      <pubDate>Mon, 29 Jul 2019 00:00:00 +0000</pubDate>
+      <guid>/post/tales-from-tails-analisando-o-risco-em-previsoes/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;http://rleripio.com.br/post/combinando-modelos-de-previsao/&#34; target=&#34;_blank&#34;&gt;&lt;em&gt;No post anterior&lt;/em&gt;&lt;/a&gt;, tratei de estratégias para combinar modelos de previsão a fim de obter melhores resultados. Melhor resultado, naquele contexto, significava apresentar menor &lt;strong&gt;Root mean square forecast error (RMSFE)&lt;/strong&gt;.É muito comum &amp;ndash; tanto na literatura como na prática &amp;ndash; utilizar esta medida ou outras semelhantes que envolvam médias dos desvios quadráticos ou absolutos dos erros, por exemplo MSE, MSPE, MASE, MAPE, etc. &lt;strong&gt;Sabe-se, contudo, que médias são muito sensíveis a valores extremos.&lt;/strong&gt; Portanto, um único valor extremo no conjunto de erros de previsão é capaz de elevar de maneira significativa aquelas estatísticas. Dito de outra forma, um modelo relativamente bom pode ser descartado porque apresentou uma única previsão ruim. Por esta razão, ganhou popularidade medidas que substituem a média pela mediana naquelas estatísticas anteriores. Os interessados em entender melhor as características destas medidas podem recorrer ao artigo de Hyndman e Koehler (2006): &lt;a href=&#34;https://robjhyndman.com/papers/mase.pdf&#34; target=&#34;_blank&#34;&gt;&lt;em&gt;&amp;ldquo;Another look at measures of forecast accuracy&amp;rdquo;&lt;/em&gt;&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Neste ponto, eu gostaria de chamar atenção para uma coisa muito importante: &lt;strong&gt;a estatística de acurácia utilizada para ranquear modelos é uma função-perda e, como tal, reflete o objetivo que se pretende alcançar.&lt;/strong&gt;Se o objetivo é reter o modelo que, em geral, não apresenta previsões muito distantes das realizações, as medidas consideradas até agora são razoáveis. Por outro lado, imagine que a previsão seja para o estoque de uma empresa ou para uma variável que define uma posição de investimento. &lt;strong&gt;Nestes casos, o risco da previsão importa.&lt;/strong&gt;Em outras palavras, pode não fazer muito sentido escolher um modelo que, apesar de ter bom desempenho na média/mediana, apresenta maiores chances de valores extremos. No caso da empresa, tanto o excesso quanto a falta de estoque em níveis elevados pode comprometer as operações; igualmente catastrófico pode ser a realização muito abaixo/acima do previsto para uma variável-chave para o investidor.
+Para usar um exemplo real, vamos considerar a mesma variável utilizada no post anterior: o núcleo do IPCA EX-3. A amostra vai de julho de 2006 a maio de 2019 e contém 155 observações. Os modelos utilizados foram ARIMA, ETS, CES e DOTM &amp;ndash; todos vistos naquela ocasião &amp;ndash; e os erros de previsão um passo à frente computados a partir de validação-cruzada com uma janela móvel de 60 observações &amp;ndash; o que totalizou cerca de 95 pontos de erro para cada modelo. As densidades dos erros de previsão para cada modelo são apresentadas abaixo:
+&lt;img src=&#34;2019-07-29-tales-from-tails-analisando-o-risco-em-previsões_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;672&#34; /&gt;
+De modo geral, todas as distribuições apresentam maior ocorrência em torno do zero, o que sugere que medidas que computam a tendência central devem ter desempenho mais ou menos parecido. Porém, cabe notar que a cauda das distribuições têm formatos bem diferentes: os erros do modelo ETS têm a cauda da direita maior que a do modelo DOTM e CES, por exemplo. É justamente neste aspecto que reside a ideia de risco: &lt;strong&gt;a probabilidade de eventos extremos é maior ou menor de acordo com a área destas caudas&lt;/strong&gt;. Para traduzir isso de forma mais objetiva, o gráfico abaixo traz três medidas: duas de tendência central &amp;ndash; Root mean square forecast error (RMSFE) e Root median square forecast error (RMedSFE) &amp;ndash; e uma de risco: os limites da área com probabilidade de 10% à direita e à esquerda &amp;ndash; esta última em valor absoluto para ficar mais fácil de visualizar com as demais.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;2019-07-29-tales-from-tails-analisando-o-risco-em-previsões_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;1152&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;O primeiro ponto a notar é que existe diferença na classificação quando consideramos a média ou a mediana. Pelo RMSFE, a escolha seria pelo DOTM, ao passo que pelo RMedSFE o modelo escolhido seria o CES. Por outro lado, se quiséssemos reduzir as chances de valores extremos &amp;ndash; tanto para cima quanto para baixo &amp;ndash; o DOTM seria a escolha inequívoca. Fica claro, portanto, a relevância de utilizar medidas aderentes aos objetivos da previsão. Adicionalmente, é sempre uma boa ideia comparar medidas alternativas para cada objetivo.&lt;/p&gt;
+
+&lt;p&gt;Por fim, uma questão interessante que se coloca é: &lt;strong&gt;não é possível ter uma única medida capaz de sumarizar tanto a acurácia como o risco em um modelo de previsão?&lt;/strong&gt; A resposta parece ser positiva. No artigo &lt;a href=&#34;https://www.sciencedirect.com/science/article/pii/S0169207018301547&#34; target=&#34;_blank&#34;&gt;&lt;em&gt;Tales from tails: On the empirical distributions of forecasting errors and their implication to risk&lt;/em&gt;&lt;/a&gt;, os autores propõem uma medida chamada Risk measure (RM). A ideia é relativamente simples: aplica-se uma transformação do tipo Box-Cox sobre a distribuição dos erros de previsão a fim de normalizá-los e em seguida calcula-se a medida que é a soma da média com o desvio-padrão da distribuição transformada. Ao fim, a transformação é revertida. A tabela abaixo computa uma versão da medida RM para os erros de previsão dos modelos (transformados via Box-Cox) em conjunto com o p-valor associado ao teste Shapiro de normalidade.&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;left&#34;&gt;modelo&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;MAE&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;SD&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;RM&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;shapiro_bc&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;dotm&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.94&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.11&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2.03&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.02&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;ces&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.31&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.26&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2.79&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.93&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;arima&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.41&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3.09&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.06&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;ets&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3.02&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.23&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;13.48&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;O problema é que nem sempre a distribuição transformada é normal. O modelo DOTM apresentou a menor RM, porém os resultados não são significativos uma vez que somente a distribuição dos erros do modelo CES &amp;ndash; e com alguma &amp;ldquo;boa vontade&amp;rdquo; a do ARIMA &amp;ndash; se aproximou de uma distribuição normal. &lt;strong&gt;De fato, em termos de p-valor, a distribuição original dos erros apresentou resultados melhores para o teste de normalidade: respectivamente 0.14, 0.15, 0.11 e 0.02.&lt;/strong&gt; Ainda assim, o ideal seria ter p-valores maiores para dar mais segurança.&lt;/p&gt;
+
+&lt;p&gt;Os códigos dos exercícios encontram-se disponíveis no &lt;a href=&#34;https://github.com/leripio/blog&#34; target=&#34;_blank&#34;&gt;repositório do blog no github.&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Aviso legal&lt;/strong&gt;: Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Combinando modelos de previsão</title>
+      <link>/post/combinando-modelos-de-previsao/</link>
+      <pubDate>Thu, 11 Jul 2019 00:00:00 +0000</pubDate>
+      <guid>/post/combinando-modelos-de-previsao/</guid>
+      <description>&lt;p&gt;Em posts anteriores apresentei algumas metodologias capazes de melhorar previsões. Em particular, falei um pouco sobre &lt;strong&gt;bagging&lt;/strong&gt; — uma técnica que estima um modelo específico sobre variações da série original e, em seguida, computa a média/mediana destas previsões &lt;a href=&#34;http://rleripio.com.br/post/como-aprimorar-previsoes-uma-aplicacao-com-bootstrap/&#34;&gt;(ver aqui)&lt;/a&gt; — e sobre &lt;strong&gt;rectify&lt;/strong&gt; — uma abordagem que considera eventuais informações contidas nos erros de previsão &lt;a href=&#34;http://rleripio.com.br/post/melhorando-previsoes-a-partir-dos-erros-a-estrategia-rectify/&#34;&gt;(ver aqui)&lt;/a&gt;. Em todos os casos considerei apenas um único modelo para realizar as previsões. Porém, com frequência temos à disposição mais de um modelo para a mesma variável. Neste caso, o que fazer?&lt;/p&gt;
+
+&lt;p&gt;Uma estratégia muito comum consiste em combinar previsões de diversos modelos. Isso não é novidade e vem sendo explorado desde o paper seminal de Bates e Granger em 1969, &lt;em&gt;“The combination of forecasts“&lt;/em&gt;, com resultados bastante promissores. Entretanto, a estratégia parece ter definido um novo padrão no campo de previsões uma vez que &lt;strong&gt;12 dos 17 modelos mais acurados na competição M4 foram combinações&lt;/strong&gt;. Isto se deve, em grande medida, ao menor risco de repousar exclusivamente em um modelo mal especificado ou com baixa capacidade de adaptação a novos eventos.&lt;/p&gt;
+
+&lt;p&gt;Existem diversas estratégias para combinar previsões. As abordagens mais comuns utilizam alguma medida como média simples/mediana ou fazem uso de alguma combinação linear das previsões, conforme a expressão abaixo:&lt;/p&gt;
+
+&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[ y^{FC}_{t} = \alpha_1 y_{1,t}^{FC} + \alpha_2 y_{2,t}^{FC} + ... + \alpha_k y_{k,t}^{FC} = \sum_i^k \alpha_i y_{i,t}^{FC} \]&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;em que $y_{i,t}^{FC}$ é a previsão do modelo $i$ para o período $t$.&lt;/p&gt;
+
+&lt;p&gt;Os pesos, $\alpha_i$, podem ser definidos de diversas formas. Em geral, considera-se alguma medida do erro de previsão de cada modelo, dando menor peso ao modelo que historicamente errou mais; ou então obtém-se os pesos através da minimização de alguma função perda (RMSFE, MSFE, etc). Métodos mais sofisticados permitem, por exemplo, mudanças no valor dos parâmetros ao longo do tempo e até mesmo a utilização de algoritmos de Machine Learning para aprender o valor destes parâmetros.&lt;/p&gt;
+
+&lt;p&gt;Neste post, vou considerar quatro modelos univariados: &lt;strong&gt;ETS&lt;/strong&gt;, &lt;strong&gt;CES&lt;/strong&gt; (complex exponential smoothing), &lt;strong&gt;ARIMA&lt;/strong&gt; e &lt;strong&gt;DOTM&lt;/strong&gt; (dynamic optimised theta). A primeira abordagem para combinação será computar a mediana das projeções individuais. A escolha conjunta destes modelos e da mediana para combinação não é arbitrária, mas segue a proposta de &lt;a href=&#34;https://www.sciencedirect.com/science/article/pii/S0169207019300585&#34;&gt;Petropoulos e Svetunkov (2019, IJF)&lt;/a&gt;, a qual, embora simples, obteve excelentes resultados. A segunda abordagem para combinação considera os mesmos modelos e pesos $\alpha_i$ que minimizam o RMSFE (root mean squared forecast error), de acordo com:&lt;/p&gt;
+
+&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[ min_{\alpha_i} \frac{\sum_{t = 1}^{T} ( y_t - \sum_i^{k} \alpha_i y_{i,t}^{FC} )^2}{n} \]&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;Os leitores mais familiarizados vão notar que este problema pode ser reduzido à uma regressão linear entre o y observado em $t$ e as projeções de cada um dos modelos para o mesmo $t$. Em especial, ao elevar ao quadrado os resíduos da regressão, calcular a média e extrair a raiz, obteremos o RMSFE. Entretanto, para deixar o tratamento mais geral, vou considerar o problema de otimização acima. Adicionalmente, para que os coeficientes $\alpha_i$ sejam não-negativos e somem um, vou aplicar uma transformação sobre eles utilizando a função &lt;strong&gt;softmax&lt;/strong&gt;. O objetivo é deixar mais intuitiva a noção de pesos. Portanto, os coeficientes $\alpha_i$ padronizados serão dados por:&lt;/p&gt;
+
+&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[ \bar{\alpha_i} = \frac{e^{\alpha_i}}{\sum_i^k e^{\alpha_i}} \]&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;Por fim, vamos comparar os resultados dos modelos individuais com aqueles obtidos através das combinações. Antes de começarmos, é preciso chamar atenção para três pontos. Em primeiro lugar, como quase tudo em forecasting, as evidências que apontam vantagem de previsões combinadas sobre as individuais são obtidas ao aplicar o método sobre um grande conjunto de séries. Ou seja, a superioridade dos métodos de combinação vale na média e não necessariamente para todos os casos particulares.&lt;/p&gt;
+
+&lt;p&gt;Em segundo lugar, a combinação de modelos pressupõe que os modelos gerem previsões não-viesadas. Caso contrário, o viés de um dos modelos acaba contaminando a previsão combinada. Por esta razão, incluir uma constante no problema de otimização pode melhorar o resultado, uma vez que captura algum eventual viés.&lt;/p&gt;
+
+&lt;p&gt;Por último, é preciso ter cuidado ao avaliar o poder preditivo dos modelos. No caso da combinação linear, como precisamos gerar previsões para calcular o valor dos pesos $\alpha_i$, vamos separar uma parte da amostra para validação. Para ficar mais claro, faremos o seguinte:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;A amostra de treino será utilizada para computar as projeções de cada método;&lt;/li&gt;
+&lt;li&gt;O peso de cada método será computado tendo como referência o poder preditivo sobre a amostra de validação;&lt;/li&gt;
+&lt;li&gt;Os pesos obtidos na etapa 2 serão utilizados para combinar as projeções obtidas na amostra de treino ampliada (treino+validação).&lt;/li&gt;
+&lt;li&gt;Estas projeções da etapa 3 serão comparadas com os valores da amostra de teste.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Entendido o exercício, abra o R e acompanhe!&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Passo 1: carregar os pacotes necessários, importar os dados e definir as amostras.&lt;/strong&gt; Para esta aplicação, vamos utilizar a série do núcleo do IPCA EX-3, calculado pelo BCB (SGS 27839).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;# 1. Carregar bibliotecas
+
+library(tidyverse)
+library(rbcb) # Para instalar: devtools::install_github(&amp;quot;wilsonfreitas/rbcb&amp;quot;)
+library(forecast) 
+library(smooth) 
+library(forecTheta) 
+library(knitr)
+
+# 2. Importar dados dados
+
+dados &amp;lt;- rbcb::get_series(list(&amp;quot;ipca_ex3&amp;quot; = 27839), 
+                          start_date = &amp;quot;2006-07-01&amp;quot;, 
+                          end_date = &amp;quot;2019-05-01&amp;quot;) 
+dados_ts &amp;lt;- ts(dados$ipca_ex3, start = c(2006,7), freq = 12) 
+
+# 3. Separar as amostras (cerca de 55% para treino, 30% para validação e 15% para teste) 
+
+dados_treino &amp;lt;- window(dados_ts, end = c(2013,7)) 
+dados_valida &amp;lt;- window(dados_ts, start = c(2013,8), end = c(2017,5)) 
+dados_teste &amp;lt;- window(dados_ts, start = c(2017,6)) 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Passo 2: realizar as projeções individuais para cada modelo com horizonte igual ao período de validação.&lt;/strong&gt; Estes dados serão utilizados para estimar os pesos.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;modelo_i &amp;lt;- list(
+
+  &amp;quot;ets&amp;quot; = function(x,h) forecast(ets(x, lambda = &amp;quot;auto&amp;quot;), h = h),
+  &amp;quot;ces&amp;quot; = function(x,h) forecast(smooth::auto.ces(x), h = h),
+  &amp;quot;arima&amp;quot; = function(x,h) forecast(auto.arima(x), h = h),
+  &amp;quot;dotm&amp;quot; = function(x,h) forecTheta::dotm(x, h = h)
+)
+
+fc_i &amp;lt;- purrr::invoke_map(.f = modelo_i, 
+                          .x = list(dados_treino), 
+                          h = length(dados_valida))
+
+fc_i_mean &amp;lt;- purrr::map_dfc(.x = fc_i, .f = function(x) x[[&amp;quot;mean&amp;quot;]]) %&amp;gt;% 
+             dplyr::mutate(y_valida = dados_valida)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Passo 3: computar os parâmetros que minimizam a RMSFE e normalizá-los.&lt;/strong&gt; Aqui, como eram apenas 4 modelos eu abri o somatório para ficar mais claro. Para o caso de um conjunto grande de modelos, o ideal é substituir por uma operação matricial.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;msfe_comb &amp;lt;- function(x){
+
+  alpha_ets &amp;lt;- x[1]
+  alpha_ces &amp;lt;- x[2]
+  alpha_arima &amp;lt;- x[3]
+  alpha_dotm &amp;lt;- x[4]
+
+  ((fc_i_mean$y_valida - alpha_ets*fc_i_mean$ets - alpha_ces*fc_i_mean$ces - 
+    alpha_arima*fc_i_mean$arima - alpha_dotm*fc_i_mean$dotm)^2) %&amp;gt;% 
+  
+  mean() %&amp;gt;% 
+  
+  sqrt()
+
+  }
+
+pesos &amp;lt;- optim(c(1,1,1,1), msfe_comb)
+
+pesos_norm &amp;lt;- round(exp(pesos$par)/sum(exp(pesos$par)), 3)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Passo 4: realizar as projeções combinadas utilizando os parâmetros estimados e a mediana&lt;/strong&gt;. Em seguida, comparar com as realizações da amostra de teste.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;dados_treino_amplo &amp;lt;- window(dados_ts, end = c(2017,5))
+
+fc_i_amplo &amp;lt;- purrr::invoke_map(.f = modelo_i, 
+                                .x = list(dados_treino_amplo), 
+                                h = length(dados_teste))
+fc_i_mean_amplo &amp;lt;- purrr::map_dfc(.x = fc_i_amplo, 
+                                  .f = function(x) x[[&amp;quot;mean&amp;quot;]]) %&amp;gt;%
+
+  dplyr::mutate(&amp;quot;y_teste&amp;quot; = dados_teste) %&amp;gt;%
+
+  dplyr::rowwise() %&amp;gt;%
+
+  dplyr::mutate(&amp;quot;Mediana&amp;quot; = median(c(ets,ces,arima,dotm))) %&amp;gt;%
+
+  dplyr::ungroup() %&amp;gt;%
+
+  dplyr::mutate(&amp;quot;Otimização&amp;quot; = pesos_norm[1]*ets + pesos_norm[2]*ces + 
+                             pesos_norm[3]*arima + pesos_norm[4]*dotm)
+
+fc_i_acc &amp;lt;- fc_i_mean_amplo %&amp;gt;% 
+  
+  dplyr::summarise_at(vars(-y_teste), 
+                      funs(forecast::accuracy(., y_teste)[, &amp;quot;RMSE&amp;quot;]))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;As medidas de acurácia são exibidas na tabela abaixo. A estratégia de combinação através da mediana apresentou o melhor resultado, superando ligeiramente os modelos CES e ETS. A combinação através de otimização, por sua vez, não foi capaz de bater todos os modelos individuais. Mais especificamente, o bom desempenho do modelo arima no período de validação fez com que este recebesse um peso mais elevado. Entretanto, essa vantagem não se materializou no período de teste. Isto reforça a necessidade de reavaliar modelos e estratégias de tempos em tempos, sobretudo quando ocorrem mudanças estruturais na série de interesse -- como foi o caso do IPCA EX-3. Por outro lado, também reforça a capacidade de estratégias que utilizam medidas de tendência menos sensíveis a extremos -- como a mediana -- em responder melhor a ambientes mais incertos.&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;left&#34;&gt;Modelo&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;RMSFE&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;Mediana&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.121&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;ces&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.123&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;ets&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.123&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;dotm&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.131&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;Otimização&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.143&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;arima&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.184&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;O gráfico abaixo apresenta as observações para o IPCA EX-3 da amostra de teste e as previsões pontuais geradas pelos dois métodos de combinação. Vale ressaltar que uma análise mais rigorosa levaria em conta também a performance para cada horizonte. Também fica claro ao observar o gráfico que os picos e vales mais pronunciados podem ter um papel relevante sobre a magnitude da medida RMSFE. Uma boa prática seria considerar medidas alternativas, sobretudo aquelas mais robustas a este tipo de situação. Pretendo abordar isso em algum momento.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;2019-07-11-combinando-modelos-de-previsão_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;3600&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Por fim, cabe notar que intervalo de confiança nesses casos não é trivial, uma vez que é preciso obter uma expressão para a variância da combinação das previsões, o que requer computar as covariâncias entre os erros dos modelos. Uma solução conservadora é utilizar o intervalo mais amplo dos modelos individuais, porém não me agrada muito. Talvez possamos voltar nesse ponto em uma próxima oportunidade.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Sugestão&lt;/strong&gt;: Para os interessados em aplicar metodologias de combinação de previsões, existem alguns pacotes disponíveis para R. Dois deles (opera e ForecastHybrid) são tratados neste post do Rob. Hyndman: &lt;a href=&#34;https://robjhyndman.com/hyndsight/forecast-combinations/&#34;&gt;https://robjhyndman.com/hyndsight/forecast-combinations/&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Os códigos dos exercícios encontram-se disponíveis no &lt;a href=&#34;http://github.com/leripio/blog&#34;&gt;repositório&lt;/a&gt; do blog no github.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Aviso legal&lt;/strong&gt;: Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Como aprimorar previsões: uma aplicação com bootstrap</title>
+      <link>/post/como-aprimorar-previsoes-uma-aplicacao-com-bootstrap/</link>
+      <pubDate>Thu, 13 Sep 2018 00:00:00 +0000</pubDate>
+      <guid>/post/como-aprimorar-previsoes-uma-aplicacao-com-bootstrap/</guid>
+      <description>&lt;p&gt;O exercício de hoje tem como objetivo apresentar uma técnica com potencial para aprimorar a previsão pontual de uma série, conhecida como &lt;strong&gt;bagging&lt;/strong&gt; (&lt;em&gt;bootstrap aggregating&lt;/em&gt;).&lt;/p&gt;
+
+&lt;p&gt;Partindo do pressuposto de que toda série temporal é uma realização específica de um processo estocástico, o que este método faz é gerar outras possíveis realizações (séries) deste mesmo processo gerador. E como isso é feito?&lt;/p&gt;
+
+&lt;p&gt;Em primeiro lugar, a série original é decomposta em tendência, sazonalidade e restante (pense neste último termo como a parte aleatória da série). Este termo restante é submetido a um processo de bootstrap, isto é, ele sofre um processo de re-amostragem. Todavia, como o termo aleatório de uma série temporal pode ser correlacionado no tempo, esta re-amostragem não é feita por observações, mas em blocos — &lt;strong&gt;blocked bootstrap&lt;/strong&gt;. Por fim, estes novos componentes aleatórios obtidos via bootstrap são reintroduzidos aos componentes de tendência e sazonalidade da série original formando novas séries que são variantes dela.&lt;/p&gt;
+
+&lt;p&gt;Para ficar mais claro, considere o gráfico abaixo. A linha preta é a série original da taxa de desocupação medida pela Pnad Contínua Mensal (IBGE). As linhas coloridas são séries calculadas a partir do processo descrito acima. Do ponto de vista estatístico, qualquer uma daquelas séries poderia ter ocorrido, sendo a série “verdadeira” aquela que efetivamente ocorreu.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;2018-09-13-como-aprimorar-previsões-uma-aplicação-com-bootstrap_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Ok, entendido até aqui. E agora? Agora, o método consiste em obter as previsões para cada uma das séries e calcular a média das previsões. Você pode estar se perguntando se, de fato, este método melhora o poder preditivo de um modelo. Existem trabalhos que mostram aumento de performance, na média, para alguns modelos. De todo modo, é aconselhável checar se o mesmo é válido para a série e para o modelo que estamos utilizando. Vamos fazer um exemplo?&lt;/p&gt;
+
+&lt;p&gt;Antes de começarmos, uma breve explicação. Utilizaremos a função bld.mbb.bootstrap() do pacote forecast para calcular as séries via bootstrap, conforme o gráfico acima. O resultado será um objeto do tipo lista com as séries geradas. Em seguida, vamos utilizar a função map() do pacote purrr para gerar previsões para cada uma das séries através do auto.arima(), também do pacote forecast. Mas lembre-se que você pode utilizar qualquer modelo que desejar. O pacote forecast tem uma implementação direta através da função baggedModel(), mas eu preferi desagregar o trabalho para deixar mais claro como é feito. Por fim, vamos comparar os erros de previsão (fora da amostra) da série original e da média das séries geradas (bagging).&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Passo 1: carregar pacotes necessários&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;library(sidrar)
+library(tidyverse)
+library(forecast)
+library(timetk)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Passo 2: importar a série temporal da PNAD&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;pnad &amp;lt;- sidrar::get_sidra(api = &amp;quot;/t/6381/n1/all/v/4099/p/all/d/v4099%201&amp;quot;)
+
+pnad_ts &amp;lt;- ts(pnad$Valor, start = c(2012,3), freq = 12)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Passo 3: definir amostras de treino e de teste para medir a acurácia das previsões e também o número de séries geradas por bootstrap&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;pnad_treino &amp;lt;- window(pnad_ts, end = c(2016,7))
+
+pnad_teste &amp;lt;- window(pnad_ts, start = c(2016,8))
+
+k &amp;lt;- 10
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Passo 4: computar as séries via bootstrap&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;pnad_boot &amp;lt;- forecast::bld.mbb.bootstrap(pnad_treino, k) %&amp;gt;%
+  
+  purrr::map(.f = ts, start = c(2012,3), freq = 12)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Passo 5: computar previsões por auto.arima, por bagging&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;aa_fc &amp;lt;- function(x){forecast(auto.arima(x, max.d = 1), n = 24)[[&amp;quot;mean&amp;quot;]]}
+
+pnad_boot_fc &amp;lt;- purrr::map(.x = pnad_boot, .f = aa_fc)
+
+## Computar a previsão pelo método bagging
+
+fc_original &amp;lt;- pnad_boot_fc[[1]]
+
+fc_bagged &amp;lt;- pnad_boot_fc %&amp;gt;% purrr::reduce(`+`) %&amp;gt;% `/`(k)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Passo 6: comparar a acurácia dos modelos&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;accuracy(fc_original, pnad_teste)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;##                 ME     RMSE      MAE       MPE    MAPE      ACF1 Theil&#39;s U
+## Test set -2.362092 3.129262 2.363582 -18.89847 18.9103 0.8906952   10.3499
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;accuracy(fc_bagged, pnad_teste)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;##                 ME     RMSE      MAE       MPE     MAPE      ACF1
+## Test set -1.947639 2.682957 2.013009 -15.56498 16.10364 0.8898631
+##          Theil&#39;s U
+## Test set   8.86905
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;De fato, como é possível observar, as previsões a partir do método &lt;strong&gt;bagging&lt;/strong&gt; apresentaram desempenho superior.&lt;/p&gt;
+
+&lt;p&gt;Os códigos dos exercícios encontram-se disponíveis no &lt;a href=&#34;http://github.com/leripio/blog&#34; target=&#34;_blank&#34;&gt;repositório&lt;/a&gt; do blog no github.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Aviso legal&lt;/strong&gt;: Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

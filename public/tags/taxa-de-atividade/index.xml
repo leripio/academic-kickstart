@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Taxa de atividade | RLeripio</title>
+    <link>/tags/taxa-de-atividade/</link>
+      <atom:link href="/tags/taxa-de-atividade/index.xml" rel="self" type="application/rss+xml" />
+    <description>Taxa de atividade</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Fri, 24 May 2019 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/img/logo.png</url>
+      <title>Taxa de atividade</title>
+      <link>/tags/taxa-de-atividade/</link>
+    </image>
+    
+    <item>
+      <title>Efeito da demografia sobre o crescimento de longo-prazo</title>
+      <link>/post/efeito-da-demografia-sobre-o-crescimento-de-longo-prazo/</link>
+      <pubDate>Fri, 24 May 2019 00:00:00 +0000</pubDate>
+      <guid>/post/efeito-da-demografia-sobre-o-crescimento-de-longo-prazo/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Deep learning | RLeripio</title>
+    <link>/tags/deep-learning/</link>
+      <atom:link href="/tags/deep-learning/index.xml" rel="self" type="application/rss+xml" />
+    <description>Deep learning</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Fri, 09 Aug 2019 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/img/logo.png</url>
+      <title>Deep learning</title>
+      <link>/tags/deep-learning/</link>
+    </image>
+    
+    <item>
+      <title>Utilizando redes neurais para combinar modelos</title>
+      <link>/post/utilizando-redes-neurais-para-combinar-modelos/</link>
+      <pubDate>Fri, 09 Aug 2019 00:00:00 +0000</pubDate>
+      <guid>/post/utilizando-redes-neurais-para-combinar-modelos/</guid>
+      <description>
+
+
+&lt;p&gt;No post &lt;a href=&#34;http://rleripio.com.br/combinando-modelos-de-previsao/&#34;&gt;“Combinando modelos de previsão”&lt;/a&gt;, apresentei duas formas simples de combinar modelos de previsão. A primeira delas envolvia obter uma combinação linear das previsões individuais de cada modelo, através de um método de otimização (OLS, por exemplo, ou equivalente). O segundo método utilizava a mediana das projeções dos modelos individuais. Embora operacionalmente mais simples, esta última abordagem performou melhor que a anterior – um resultado nada surpreendente, pois existe literatura mostrando que é mesmo difícil obter resultados melhores que a combinação por mediana daqueles modelos empregados.&lt;/p&gt;
+&lt;p&gt;Combinação de modelos tornou-se um novo paradigma em previsões. Conforme citado naquele post:&lt;/p&gt;
+&lt;p&gt;[…] a estratégia parece ter definido um novo padrão no campo de previsões uma vez que &lt;strong&gt;12 dos 17 modelos mais acurados na competição M4 foram combinações&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Na ocasião, mencionei também que haviam formas mais sofisticadas de combinar modelos. Segue a passagem:&lt;/p&gt;
+&lt;p&gt;[…] Métodos mais sofisticados permitem, por exemplo, mudanças no valor dos parâmetros ao longo do tempo e até mesmo a utilização de &lt;strong&gt;algoritmos de Machine Learning&lt;/strong&gt; para aprender o valor destes parâmetros.&lt;/p&gt;
+&lt;p&gt;O post de hoje busca justamente isso: utilizar uma &lt;strong&gt;rede neural&lt;/strong&gt; para combinar modelos. Para isto, vamos utilizar aqueles mesmos quatro modelos: &lt;strong&gt;CES&lt;/strong&gt;, &lt;strong&gt;ETS&lt;/strong&gt;, &lt;strong&gt;DOTM&lt;/strong&gt; e &lt;strong&gt;ARIMA&lt;/strong&gt;. Entretanto, optei desta vez por utilizar a série temporal do índice VIX, divulgado pelo CBOE (Chicago Board Options Exchange). Para os menos familiarizados, o índice VIX busca medir a volatilidade esperada na bolsa americana. A escolha da série, dentre outros motivos, justifica-se por seu tamanho: 355 observações mensais. Sabe-se que redes neurais são &lt;em&gt;data hungry&lt;/em&gt;, logo séries curtas podem não apresentar bons resultados. A principal vantagem de utilizar uma rede neural para aprender qual a melhor forma de combinar os modelos é sua flexibilidade, isto é, os pesos atribuídos a cada modelo poderá ser uma função não-linear, potencialmente complexa.&lt;/p&gt;
+&lt;p&gt;Entendido o objetivo, vamos iniciar o exercício. De modo a poder contar com um número maior de observações, criei a amostra da seguinte forma:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;&lt;p&gt;Computei as projeções um-passo-à-frente de cada modelo através de validação-cruzada. Utilizando uma janela móvel de 100 observações para as projeções, obtive um total próximo a 250 previsões (fora da amostra).&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Desta amostra, separei cerca de 70% para treino e 30% para teste. A amostra de treino foi utilizada para calcular os pesos por OLS e também para treinar a Rede Neural. A combinação por mediana foi calculada diretamente sobre a amostra de teste, pois não envolve nenhuma estimativa de parâmetros.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Por fim, foram computados o Mean Squared Error (MSE) de todos os métodos.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Os resultados seguem abaixo. Diferente dos resultados do post anterior, a mediana não foi capaz de superar todos os modelos individuais. Isto, provavelmente, é consequência de existirem dois modelos cujas performances se distanciam bastante dos demais – ARIMA e CES.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;## 1. Carregar pacotes necessários
+
+library(keras)
+library(forecast)
+library(tidyverse)
+library(smooth)
+library(forecTheta)
+library(alfred)
+library(lubridate)
+
+## 2. Importar os dados 
+
+vix &amp;lt;- alfred::get_fred_series(series_id = &amp;quot;VIXCLS&amp;quot;, 
+                               series_name = &amp;quot;vix&amp;quot;, 
+                               observation_end = &amp;quot;2019-07-31&amp;quot;) %&amp;gt;%
+  
+  dplyr::mutate(date = lubridate::ymd(date)) %&amp;gt;%
+  
+  dplyr::mutate_at(vars(date), funs(year, month, day)) %&amp;gt;%
+  
+  dplyr::group_by(year, month) %&amp;gt;%
+  
+  dplyr::summarise(vix = mean(vix, na.rm = T))
+
+## 3. Computar as previsões one-step-ahead para os modelos de referência
+
+vix_ts &amp;lt;- ts(vix$vix, end = c(2019, 7), freq = 12)
+
+modelo_i &amp;lt;- list(
+  
+  &amp;quot;ets&amp;quot; = function(x,h) forecast(ets(x), h = h),
+  
+  &amp;quot;ces&amp;quot; = function(x,h) forecast(smooth::auto.ces(x), h = h),
+  
+  &amp;quot;arima&amp;quot; = function(x,h) forecast(auto.arima(x), h = h),
+  
+  &amp;quot;dotm&amp;quot; = function(x,h) forecTheta::dotm(x, h = h)
+  
+)
+
+fc_i &amp;lt;- purrr::map2(.f = forecast::tsCV, 
+                    .x = list(vix_ts), 
+                    .y = modelo_i, 
+                    h = 1, window = 100)
+
+fc_i_mean &amp;lt;- fc_i %&amp;gt;% 
+  
+  magrittr::set_names(names(modelo_i)) %&amp;gt;%
+  
+  purrr::map(.f = as_tibble) %&amp;gt;%
+  
+  plyr::ldply(bind_rows) %&amp;gt;%
+  
+  dplyr::group_by(.id) %&amp;gt;%
+  
+  dplyr::mutate(t = seq(from = 1, to = n(), by = 1)) %&amp;gt;%
+  
+  tidyr::spread(key = .id, value = x) %&amp;gt;%
+  
+  dplyr::mutate(y = vix_ts) %&amp;gt;%
+  
+  tidyr::drop_na() %&amp;gt;%
+  
+  dplyr::mutate_at(vars(-t, -y), ~ y - .) %&amp;gt;%
+  
+  dplyr::select(-t)
+
+## 2. Definir uma amostra de treino e outra de teste
+
+fc_i_treino &amp;lt;- fc_i_mean %&amp;gt;% dplyr::slice(1:174)
+
+fc_i_teste &amp;lt;- fc_i_mean %&amp;gt;% dplyr::slice(175:n())
+
+## 3. Observar acurácia dos modelos individuais e da mediana
+
+acc_fc &amp;lt;- fc_i_teste %&amp;gt;%
+  
+  dplyr::rowwise() %&amp;gt;%
+  
+  dplyr::mutate(mediana = median(c(arima, ces, ets, dotm))) %&amp;gt;%
+  
+  tidyr::gather(key = modelo, value = y_hat, -y) %&amp;gt;%
+  
+  dplyr::group_by(modelo) %&amp;gt;%
+  
+  dplyr::summarise(MSE = mean((y - y_hat)^2)) %&amp;gt;%
+  
+  dplyr::arrange(MSE)
+
+knitr::kable(acc_fc)&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;modelo&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;MSE&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;dotm&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.041486&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;ets&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.090884&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;mediana&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.110720&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;arima&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.358005&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;ces&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;10.519399&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;A combinação, por sua vez, também não foi capaz de entregar resultados superiores. Em outras palavras, na presença de modelos ruins, métodos mais convencionais de combinação tendem a não performar muito bem.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(tidyverse)
+
+## 4. Computar os pesos para combinação linear através de OLS
+
+pesos &amp;lt;- lm(y ~ . -1, data = fc_i_treino)$coefficients 
+
+pesos_norm &amp;lt;- exp(pesos)/sum(exp(pesos))
+
+acc_comb &amp;lt;- fc_i_teste %&amp;gt;%
+  
+  dplyr::mutate(comb = pesos_norm[&amp;quot;arima&amp;quot;]*arima + pesos_norm[&amp;quot;ces&amp;quot;]*ces + 
+                  pesos_norm[&amp;quot;dotm&amp;quot;]*dotm + pesos_norm[&amp;quot;ets&amp;quot;]*ets)
+
+acc_comb_valor &amp;lt;- (acc_comb$y - acc_comb$comb) %&amp;gt;% `^`(2) %&amp;gt;% mean()
+
+acc_fc_aux &amp;lt;- acc_fc %&amp;gt;%
+  
+  tibble::add_row(modelo = &amp;quot;combinação&amp;quot;, 
+                  MSE = acc_comb_valor) %&amp;gt;%
+  
+  dplyr::arrange(MSE)
+
+knitr::kable(acc_fc_aux)&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;modelo&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;MSE&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;dotm&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.041486&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;ets&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.090884&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;mediana&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.110720&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;combinação&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.175815&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;arima&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9.358005&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;ces&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;10.519399&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;E o que dizer da combinação através da rede neural? Antes de apresentar o resultado, vou descrever um pouco melhor a especificação utilizada. A rede neural usada aqui é do tipo &lt;em&gt;feed forward&lt;/em&gt;, com quatro &lt;em&gt;layers&lt;/em&gt; contendo 16 &lt;em&gt;units&lt;/em&gt; cada. As funções de ativação dos três primeiros &lt;em&gt;layers&lt;/em&gt; é &lt;em&gt;relu&lt;/em&gt;, enquanto a do último é &lt;em&gt;linear&lt;/em&gt;. No total, foram treinados 641 parâmetros. &lt;strong&gt;A combinação através da rede neural retornou um MSE de 4.49&lt;/strong&gt;, cerca de metade daquele reportado pelo melhor modelo individual – DOTM. O resultado é muito bom, mas valem alguns avisos. O primeiro é usual, mas nunca demais repetir: não necessariamente este aumento de performance vai acontecer para qualquer série. O segundo é mais específico: o treinamento de redes neurais envolve alguns processos estocásticos, de modo que pode ocorrer instabilidade nos parâmetros estimados e, portanto, sobre a própria acurácia do modelo. Uma solução seria treinar a rede neural um grande número de vezes e reportar a acurácia mediana. Obviamente isto envolve um grande custo operacional.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;## 5. Treinar rede neural para combinação dos modelos
+
+library(keras)
+library(tidyverse)
+
+  
+build_nn &amp;lt;- keras_model_sequential() %&amp;gt;%
+  
+  layer_dense(units = 16, activation = &amp;quot;relu&amp;quot;, 
+              input_shape = ncol(fc_i_treino)-1) %&amp;gt;%
+  
+  layer_dense(units = 16, activation = &amp;quot;relu&amp;quot;) %&amp;gt;%
+  
+  layer_dense(units = 16, activation = &amp;quot;relu&amp;quot;) %&amp;gt;%
+  
+  layer_dense(units = 1, activation = &amp;quot;linear&amp;quot;)
+  
+compile_nn &amp;lt;-  build_nn %&amp;gt;% 
+  
+  compile(loss = &amp;quot;mse&amp;quot;,
+          
+          optimizer = optimizer_rmsprop(),
+          
+          metrics = list(&amp;quot;mean_squared_error&amp;quot;))
+  
+early_stop &amp;lt;- callback_early_stopping(monitor = &amp;quot;val_loss&amp;quot;, 
+                                        patience = 20)
+  
+modelo_treinado &amp;lt;- compile_nn %&amp;gt;% 
+  
+  fit(as.matrix(fc_i_treino[, c(1:4)]),
+      
+      as.matrix(fc_i_treino[, 5]),
+      
+      epochs = 1000,
+      
+      validation_split = 0.25,
+      
+      verbose = 0,
+      
+      callbacks = list(early_stop))
+  
+mse &amp;lt;- compile_nn %&amp;gt;% 
+  
+  evaluate(as.matrix(fc_i_teste[, c(1:4)]), 
+           as.matrix(fc_i_teste[, 5]), 
+           verbose = 0)
+
+nn_fc &amp;lt;- compile_nn %&amp;gt;% predict(as.matrix(fc_i_teste[, 1:4]))
+
+
+fc_mediana &amp;lt;- fc_i_teste %&amp;gt;%
+  
+  dplyr::rowwise() %&amp;gt;%
+  
+  dplyr::mutate(mediana = median(c(arima, ces, ets, dotm)))
+
+fc_tibble &amp;lt;- tibble::tibble(obs = 1:74,
+                            &amp;quot;VIX&amp;quot; = acc_comb$y,
+                            &amp;quot;Combinação linear&amp;quot; = acc_comb$comb,
+                            &amp;quot;Mediana&amp;quot; = fc_mediana$mediana,
+                            &amp;quot;Rede Neural&amp;quot; = nn_fc)
+
+fc_tibble %&amp;gt;%
+  
+  tidyr::gather(key = modelo, value = valor, -obs) %&amp;gt;%
+  
+  dplyr::filter(modelo %in% c(&amp;quot;VIX&amp;quot;, &amp;quot;Mediana&amp;quot;, &amp;quot;Rede Neural&amp;quot;)) %&amp;gt;%
+  
+  ggplot(aes(x = obs, y = valor, 
+             color = factor(modelo, levels = c(&amp;quot;VIX&amp;quot;, 
+                                               &amp;quot;Rede Neural&amp;quot;,
+                                               &amp;quot;Mediana&amp;quot;)))) +
+  
+  geom_line(lwd = 1) +
+  
+  scale_color_manual(values = c(&amp;quot;black&amp;quot;, &amp;quot;peru&amp;quot;, &amp;quot;grey&amp;quot;)) +
+  
+  labs(x = &amp;quot;Observação&amp;quot;, 
+       y = &amp;quot;&amp;quot;, color = &amp;quot;&amp;quot;,
+       title = &amp;quot;Previsão para VIX&amp;quot;, 
+       subtitle = &amp;quot;Combinação (DOTM + ETS + CES + ARIMA) através de Rede Neural e Mediana&amp;quot;) +
+  
+  theme_minimal() +
+  
+  scale_x_continuous(breaks = seq(1,74,4)) +
+  
+  theme(legend.position = &amp;quot;top&amp;quot;,
+        legend.text = element_text(size = 12))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2019-08-09-utilizando-redes-neurais-para-combinar-modelos_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;864&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;O que chama mais atenção nos resultados é a capacidade da rede neural em evitar as projeções mais acentuadas para baixo. Note que em diversos casos isto faz com que a projeção se distancie muito do valor realizado. A princípio, tudo indica que a rede neural foi capaz de aprender a não dar muito peso para o modelo (ou os modelos) com essa tendência de subestimar demais a série em certos momentos. Adicionalmente, a combinação através da rede neural também não superestima demais alguns valores. Em suma, parece que em situações mais usuais ambos os métodos são razoáveis. Porém, na presença de desvios mais acentuados, a rede neural é capaz de entregar resultados mais próximos do observado. Essa é uma virtude importante, sobretudo por se tratar de uma série que mede volatilidade e, portanto, apresenta regiões mais “nervosas”. Neste caso, é importante que o modelo não perca a mão quando esse momento aparecer.&lt;/p&gt;
+&lt;p&gt;Por fim, uma possível estratégia para melhorar o método de combinação linear ou de mediana seria remover aquele modelo com desempenho muito ruim – no nosso caso, o CES. Uma generalização desse processo seria estimar diversos (ou todos) subconjuntos de modelos, calcular a acurácia da combinação de cada subconjunto e selecionar aquele com melhor poder preditivo. Talvez possamos abordar isso numa próxima oportunidade.&lt;/p&gt;
+&lt;p&gt;Ficou alguma dúvida ou tem sugestões? Entre em contato!&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Os códigos dos exercícios&lt;/strong&gt; encontram-se disponíveis no &lt;a href=&#34;https://github.com/leripio/blog&#34;&gt;repositório do blog no github&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Siga nossa página &lt;strong&gt;RLeripio – Economia e Data Science&lt;/strong&gt; no Facebook e fique sabendo de todas as nossas publicações!&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Aviso legal:&lt;/strong&gt; Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
