@@ -50,7 +50,7 @@ social:
   link: https://www.linkedin.com/in/leripiorenato/
 - icon: cv
   icon_pack: ai
-  link: https://drive.google.com/open?id=1NPyKAEGKCpVOrQu1evo4YI7JslX5Tnpm
+  link: https://drive.google.com/open?id=1zjnAMdP4nlLmhGEocYkupo-JNppNWpuP
   
 # Link to a PDF of your resume/CV from the About widget.
 # To enable, copy your resume/CV to `static/files/cv.pdf` and uncomment the lines below.  
