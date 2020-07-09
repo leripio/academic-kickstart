@@ -6,7 +6,11 @@ slug: usando-tidyr-pivot-para-criar-dummies-e-lags
 categories:
   - Data Science
 tags:
-  - tidyverse tidyr lags dummies rstats
+  - tidyverse 
+  - tidyr 
+  - lags 
+  - dummies 
+  - rstats
 subtitle: ''
 summary: ''
 authors: []
@@ -32,12 +36,10 @@ library(lubridate)
 
 set.seed(123)
 
-df <- 
-  
-  tibble(data = seq(ymd("2019-01-01"), ymd("2020-07-01"), by = "month"),
-         var1 = rnorm(19),
-         var2 = rnorm(19),
-         var3 = rnorm(19))
+df <- tibble(data = seq(ymd("2019-01-01"), ymd("2020-07-01"), by = "month"),
+             var1 = rnorm(19),
+             var2 = rnorm(19),
+             var3 = rnorm(19))
 
 tail(df, 5)
 ```
@@ -57,9 +59,7 @@ De início, vamos criar as *dummies* sazonais. O primeiro passo é criar uma col
 
 
 ```r
-df_seasonal <-
-  
-  df %>%
+df_seasonal <- df %>%
   
   mutate(meses = month(data, label = T, abbr = T),
          um = 1) %>%
@@ -88,9 +88,7 @@ Na sequência, vamos criar colunas com os *lags* desejados: 1 a 5. Essas colunas
 
 
 ```r
-df_lags <-
-  
-  df %>%
+df_lags <- df %>%
   
   pivot_longer(-"data", names_to = "var", values_to = "l0") %>%
   
