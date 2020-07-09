@@ -482,12 +482,10 @@ library(lubridate)
 
 set.seed(123)
 
-df &lt;- 
-  
-  tibble(data = seq(ymd(&quot;2019-01-01&quot;), ymd(&quot;2020-07-01&quot;), by = &quot;month&quot;),
-         var1 = rnorm(19),
-         var2 = rnorm(19),
-         var3 = rnorm(19))
+df &lt;- tibble(data = seq(ymd(&quot;2019-01-01&quot;), ymd(&quot;2020-07-01&quot;), by = &quot;month&quot;),
+             var1 = rnorm(19),
+             var2 = rnorm(19),
+             var3 = rnorm(19))
 
 tail(df, 5)
 </code></pre>
@@ -504,9 +502,7 @@ tail(df, 5)
 
 <p>De início, vamos criar as <em>dummies</em> sazonais. O primeiro passo é criar uma coluna com os meses da coluna de datas. A função <code>month</code> do pacote <code>lubridate</code> fornece uma forma conveniente para isso. Em seguida, criamos uma coluna com valores iguais a 1 &ndash; isso ficará mais claro adiante e os nomes das colunas não importam. Por fim, recorremos à função <code>pivot_wider</code>. Transpondo a coluna dos meses e preenchendo com os 1&rsquo;s, obteríamos um <em>frame</em> no qual cada mês é uma coluna onde o valor é igual a 1 para o mês correspondente na coluna data e <code>NA</code> nos demais. Como nosso objetivo é ter 0&rsquo;s no lugar desses <code>NA</code>, usamos o argumento <code>values_fill</code>.</p>
 
-<pre><code class="language-r">df_seasonal &lt;-
-  
-  df %&gt;%
+<pre><code class="language-r">df_seasonal &lt;- df %&gt;%
   
   mutate(meses = month(data, label = T, abbr = T),
          um = 1) %&gt;%
@@ -532,9 +528,7 @@ tail(df_seasonal, 5)
 
 <p>Na sequência, vamos criar colunas com os <em>lags</em> desejados: 1 a 5. Essas colunas também precisarão ser colocadas no formato <em>long</em>. Finalmente, vamos expandir o <em>frame</em> (formato <em>wider</em>) reunindo as duas colunas: &ldquo;var&rdquo; e &ldquo;lags&rdquo;. Isto produzirá o resultado desejado. O <code>group_by</code> e <code>arrange</code> são utilizados para garantir a ordem temporal dos dados.</p>
 
-<pre><code class="language-r">df_lags &lt;-
-  
-  df %&gt;%
+<pre><code class="language-r">df_lags &lt;- df %&gt;%
   
   pivot_longer(-&quot;data&quot;, names_to = &quot;var&quot;, values_to = &quot;l0&quot;) %&gt;%
   
@@ -581,7 +575,15 @@ tail(df_lags, 5)
 
 <div class="article-tags">
   
-  <a class="badge badge-light" href="/tags/tidyverse-tidyr-lags-dummies-rstats/">tidyverse tidyr lags dummies rstats</a>
+  <a class="badge badge-light" href="/tags/tidyverse/">tidyverse</a>
+  
+  <a class="badge badge-light" href="/tags/tidyr/">tidyr</a>
+  
+  <a class="badge badge-light" href="/tags/lags/">lags</a>
+  
+  <a class="badge badge-light" href="/tags/dummies/">dummies</a>
+  
+  <a class="badge badge-light" href="/tags/rstats/">rstats</a>
   
 </div>
 
