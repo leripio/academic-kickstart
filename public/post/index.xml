@@ -5,12 +5,234 @@
     <link>/post/</link>
       <atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Fri, 09 Aug 2019 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Thu, 23 Jul 2020 00:00:00 +0000</lastBuildDate>
     <image>
       <url>/img/logo.png</url>
       <title>Posts</title>
       <link>/post/</link>
     </image>
+    
+    <item>
+      <title>Como fazer um tracking eficiente das suas projeções</title>
+      <link>/post/como-fazer-um-tracking-eficiente-das-suas-projecoes/</link>
+      <pubDate>Thu, 23 Jul 2020 00:00:00 +0000</pubDate>
+      <guid>/post/como-fazer-um-tracking-eficiente-das-suas-projecoes/</guid>
+      <description>
+
+&lt;p&gt;Quem realiza projeções deve manter seus resultados armazenados, de modo que seja possível recuperá-los a qualquer momento. Isso permite, por exemplo, acompanhar o desempenho do modelo ao longo do tempo.&lt;/p&gt;
+
+&lt;p&gt;A tarefa pode ser feita em dois passos. Primeiro, criar um &lt;code&gt;tibble&lt;/code&gt; com três colunas: a data &lt;strong&gt;na&lt;/strong&gt; qual as projeções foram geradas; a data &lt;strong&gt;para a qual&lt;/strong&gt; as projeções foram feitas; e, por fim, os valores (ou distribuição) projetados. É possível também adicionar informações extras, como a especificação do modelo utilizado &amp;ndash; caso este seja atualizado regularmente.&lt;/p&gt;
+
+&lt;p&gt;O segundo passo é armazenar fisicamente a informação para que seja possível acessá-la mais tarde. Aqui, eu prefiro utilizar o objeto &lt;code&gt;RDS&lt;/code&gt; &amp;ndash; que é, basicamente, a estrutura para armazenagem de objetos do R. Uma boa ideia neste caso é exportar um arquivo &lt;code&gt;RDS&lt;/code&gt; contendo o &lt;code&gt;tibble&lt;/code&gt; a cada nova rodada de projeções e mantê-los em uma pasta.&lt;/p&gt;
+
+&lt;p&gt;Vamos a um exemplo prático de como fazer isso. Para utilizar um contexto atual, vamos assumir que nosso objetivo seja projetar todos os dias o número de novos casos de Covid-19 no Brasil para os próximos 7 dias a partir de um modelo univariado bem simples &amp;ndash; um &lt;code&gt;ETS&lt;/code&gt; automático do pacote &lt;code&gt;fable&lt;/code&gt; (a versão &lt;code&gt;tidy&lt;/code&gt; do pacote &lt;code&gt;forecast&lt;/code&gt;). Os dados são importados do repositório público do Wesley Cota (&lt;a href=&#34;https://github.com/wcota/covid19br/&#34; target=&#34;_blank&#34;&gt;https://github.com/wcota/covid19br/&lt;/a&gt;).&lt;/p&gt;
+
+&lt;h3 id=&#34;passo-1-carregar-pacotes-e-obter-os-dados&#34;&gt;Passo 1: carregar pacotes e obter os dados&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;library(tidyverse)
+library(lubridate)
+library(fable)
+library(tsibble)
+library(datacovidbr)
+
+dados_url &amp;lt;- &amp;quot;https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-states.csv&amp;quot;
+
+dadosBR &amp;lt;- readr::read_csv(dados_url) %&amp;gt;%
+  
+  dplyr::filter(country == &amp;quot;Brazil&amp;quot;, state == &amp;quot;TOTAL&amp;quot;,
+                date &amp;gt;= max(date) %m-% days(60)) %&amp;gt;%
+  
+  dplyr::select(date, newCases)
+
+tail(dadosBR, 3)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A tibble: 3 x 2
+##   date       newCases
+##   &amp;lt;date&amp;gt;        &amp;lt;dbl&amp;gt;
+## 1 2020-07-21    46927
+## 2 2020-07-22    62943
+## 3 2020-07-23    56111
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;passo-2-ajustar-o-modelo-ets-realizar-as-projeções-e-salvar-objeto-rds&#34;&gt;Passo 2: ajustar o modelo ETS, realizar as projeções e salvar objeto RDS&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;  proj &amp;lt;- dadosBR %&amp;gt;%
+  
+  as_tsibble() %&amp;gt;%
+  
+  model(ets = ETS(newCases)) %&amp;gt;%
+  
+  forecast(h = &amp;quot;7 days&amp;quot;) %&amp;gt;%
+  
+  dplyr::mutate(dateFrom = max(dadosBR$date))
+
+tail(proj, 3)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A fable: 3 x 5 [1D]
+## # Key:     .model [1]
+##   .model date       newCases .distribution     dateFrom  
+##   &amp;lt;chr&amp;gt;  &amp;lt;date&amp;gt;        &amp;lt;dbl&amp;gt; &amp;lt;dist&amp;gt;            &amp;lt;date&amp;gt;    
+## 1 ets    2020-07-28   46116. N(46116, 7.8e+07) 2020-07-23
+## 2 ets    2020-07-29   47461. N(47461, 8.2e+07) 2020-07-23
+## 3 ets    2020-07-30   47584. N(47584, 8.3e+07) 2020-07-23
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Em seguida, basta salvar o objeto. Uma boa ideia é incluir alguma referência no nome do arquivo: a data em que foram geradas as projeções ou a data da última observação disponível, por exemplo.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;saveRDS(proj, paste0(&amp;quot;tracking/forecast_&amp;quot;, unique(proj$dateFrom), &amp;quot;.rds&amp;quot;))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Para termos uma noção do que seria o resultado ao longo de um período maior, reproduzi a ação anterior por um período de 30 dias. Assim, existem na pasta 30 arquivos &lt;code&gt;.rds&lt;/code&gt; correspondendo à trajetória de projeção gerada em cada um dos 30 dias. Esses arquivos podem ser importados de uma só vez &amp;ndash; utilizando como identificador um padrão do nome ou simplesmente a extensão &amp;ndash; e empilhados para produzir as análises.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;proj_labs &amp;lt;- list.files(&amp;quot;tracking/&amp;quot;)[str_detect(list.files(&amp;quot;tracking/&amp;quot;), &amp;quot;.rds&amp;quot;)]
+
+proj_files &amp;lt;- purrr::map_dfr(.x = proj_labs, 
+                             .f = function(x) readRDS(paste0(&amp;quot;tracking/&amp;quot;, x)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Para finalizar, devemos adicionar os dados que foram realizados. Isto pode ser feito dando um &lt;code&gt;join&lt;/code&gt; com o nosso objeto &lt;code&gt;dadosBR&lt;/code&gt;, utilizando a coluna de data como identificador. Para que o &lt;code&gt;tibble&lt;/code&gt; fique mais claro, vamos renomear a coluna.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;proj_tracking &amp;lt;- dplyr::left_join(
+  
+  proj_files %&amp;gt;% 
+    
+    as_tibble() %&amp;gt;%
+    
+    dplyr::rename(&amp;quot;previsto&amp;quot; = &amp;quot;newCases&amp;quot;),
+  
+  dadosBR %&amp;gt;% dplyr::rename(&amp;quot;realizado&amp;quot; = &amp;quot;newCases&amp;quot;)
+  
+  )
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Podemos utilizar &lt;code&gt;proj_tracking&lt;/code&gt; de diversas formas para acompanhar o desempenho do nosso modelo. O gráfico abaixo, por exemplo, traz a evolução das projeções um passo à frente. Apesar de o modelo não ser tão aderente à magnitude, ele é capaz de capturar a sazonalidade da série. Vale lembrar que o modelo utilizado é bem simples e serve apenas para ilustração.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post/2020-07-17-como-fazer-um-tracking-eficiente-das-suas-projeções_files/figure-html/plot-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Por fim, também podemos utilizar os dados gerados anteriormente para computar métricas de acurácia para cada horizonte de previsão. Para isso, vamos utilizar a função &lt;code&gt;mape&lt;/code&gt; do pacote &lt;code&gt;yardstick&lt;/code&gt; para obter o erro absoluto percentual médio (MAPE). O pacote conta com diversas outras métricas conhecidas: &lt;code&gt;rmse&lt;/code&gt;, &lt;code&gt;mae&lt;/code&gt;, &lt;code&gt;mase&lt;/code&gt;, etc.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;library(yardstick)
+
+proj_acc &amp;lt;- proj_tracking %&amp;gt;%
+  
+  dplyr::group_by(dateFrom) %&amp;gt;%
+  
+  dplyr::mutate(step_ahead = 1:n()) %&amp;gt;%
+  
+  dplyr::group_by(step_ahead) %&amp;gt;%
+  
+  yardstick::mape(truth = realizado, estimate = previsto, na.rm = TRUE)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post/2020-07-17-como-fazer-um-tracking-eficiente-das-suas-projeções_files/figure-html/acc_plot-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Aviso legal&lt;/strong&gt;: Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Usando tidyr para criar dummies e lags</title>
+      <link>/post/usando-tidyr-pivot-para-criar-dummies-e-lags/</link>
+      <pubDate>Wed, 08 Jul 2020 00:00:00 +0000</pubDate>
+      <guid>/post/usando-tidyr-pivot-para-criar-dummies-e-lags/</guid>
+      <description>&lt;p&gt;Imagine que você tenha uma base de dados com dezenas (ou centenas) de variáveis e quer criar os &lt;em&gt;lags&lt;/em&gt; de 1 a 5 para cada uma destas variáveis. Além disso, precisa adicionar &lt;em&gt;dummies&lt;/em&gt; mensais para controlar algum fator sazonal. Esta tarefa faz parte do dia-a-dia de quem trabalha com modelos econométricos/machine learning e ter uma forma prática ajuda bastante.&lt;/p&gt;
+
+&lt;p&gt;Existem algumas formas de resolver esse problema. Uma bem simples e prática envolve o &lt;code&gt;tidyr&lt;/code&gt;, pacote do &lt;code&gt;tidyverse&lt;/code&gt; dedicado à manipulação de &lt;em&gt;frames&lt;/em&gt;. Suas principais funções são &lt;code&gt;pivot_longer&lt;/code&gt; e &lt;code&gt;pivot_wider&lt;/code&gt;, usadas para posicionar os dados, respectivamente, em formato &lt;em&gt;long&lt;/em&gt; e &lt;em&gt;wide&lt;/em&gt;. Fazendo uso correto destas funções e de seus argumentos, é possível resolver o problema de forma muito simples. Então vamos lá!&lt;/p&gt;
+
+&lt;p&gt;Para começar, vou criar uma &lt;em&gt;frame&lt;/em&gt; artificial contendo uma coluna com datas mensais e três colunas representando diferentes variáveis &amp;ndash; var1, var2 e var3. Lembrando que a abordagem é geral o suficiente para acomodar qualquer número de variáveis.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;library(tidyverse)
+library(lubridate)
+
+set.seed(123)
+
+df &amp;lt;- tibble(data = seq(ymd(&amp;quot;2019-01-01&amp;quot;), ymd(&amp;quot;2020-07-01&amp;quot;), by = &amp;quot;month&amp;quot;),
+             var1 = rnorm(19),
+             var2 = rnorm(19),
+             var3 = rnorm(19))
+
+tail(df, 5)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A tibble: 5 x 4
+##   data         var1    var2    var3
+##   &amp;lt;date&amp;gt;      &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;
+## 1 2020-03-01 -0.556  0.878  -0.0429
+## 2 2020-04-01  1.79   0.822   1.37  
+## 3 2020-05-01  0.498  0.689  -0.226 
+## 4 2020-06-01 -1.97   0.554   1.52  
+## 5 2020-07-01  0.701 -0.0619 -1.55
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;De início, vamos criar as &lt;em&gt;dummies&lt;/em&gt; sazonais. O primeiro passo é criar uma coluna com os meses da coluna de datas. A função &lt;code&gt;month&lt;/code&gt; do pacote &lt;code&gt;lubridate&lt;/code&gt; fornece uma forma conveniente para isso. Em seguida, criamos uma coluna com valores iguais a 1 &amp;ndash; isso ficará mais claro adiante e os nomes das colunas não importam. Por fim, recorremos à função &lt;code&gt;pivot_wider&lt;/code&gt;. Transpondo a coluna dos meses e preenchendo com os 1&amp;rsquo;s, obteríamos um &lt;em&gt;frame&lt;/em&gt; no qual cada mês é uma coluna onde o valor é igual a 1 para o mês correspondente na coluna data e &lt;code&gt;NA&lt;/code&gt; nos demais. Como nosso objetivo é ter 0&amp;rsquo;s no lugar desses &lt;code&gt;NA&lt;/code&gt;, usamos o argumento &lt;code&gt;values_fill&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;df_seasonal &amp;lt;- df %&amp;gt;%
+  
+  mutate(meses = month(data, label = T, abbr = T),
+         um = 1) %&amp;gt;%
+  
+  pivot_wider(names_from = meses, values_from = um, values_fill = list(um = 0))
+
+tail(df_seasonal, 5)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A tibble: 5 x 16
+##   data         var1    var2    var3   jan   fev   mar   abr   mai   jun   jul
+##   &amp;lt;date&amp;gt;      &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+## 1 2020-03-01 -0.556  0.878  -0.0429     0     0     1     0     0     0     0
+## 2 2020-04-01  1.79   0.822   1.37       0     0     0     1     0     0     0
+## 3 2020-05-01  0.498  0.689  -0.226      0     0     0     0     1     0     0
+## 4 2020-06-01 -1.97   0.554   1.52       0     0     0     0     0     1     0
+## 5 2020-07-01  0.701 -0.0619 -1.55       0     0     0     0     0     0     1
+## # … with 5 more variables: ago &amp;lt;dbl&amp;gt;, set &amp;lt;dbl&amp;gt;, out &amp;lt;dbl&amp;gt;, nov &amp;lt;dbl&amp;gt;,
+## #   dez &amp;lt;dbl&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Agora vamos criar os &lt;em&gt;lags&lt;/em&gt; das variáveis. Aqui a gente vai usar tanto a &lt;code&gt;pivot_longer&lt;/code&gt; como &lt;code&gt;pivot_wider&lt;/code&gt;. O primeiro passo é deixar o &lt;em&gt;frame&lt;/em&gt; no formato &lt;em&gt;long&lt;/em&gt;, isto é, as variáveis serão empilhadas em uma única coluna que eu chamarei de &amp;ldquo;var&amp;rdquo;. Os valores ficarão na coluna &amp;ldquo;l0&amp;rdquo; que denota o &lt;em&gt;lag&lt;/em&gt; 0.&lt;/p&gt;
+
+&lt;p&gt;Na sequência, vamos criar colunas com os &lt;em&gt;lags&lt;/em&gt; desejados: 1 a 5. Essas colunas também precisarão ser colocadas no formato &lt;em&gt;long&lt;/em&gt;. Finalmente, vamos expandir o &lt;em&gt;frame&lt;/em&gt; (formato &lt;em&gt;wider&lt;/em&gt;) reunindo as duas colunas: &amp;ldquo;var&amp;rdquo; e &amp;ldquo;lags&amp;rdquo;. Isto produzirá o resultado desejado. O &lt;code&gt;group_by&lt;/code&gt; e &lt;code&gt;arrange&lt;/code&gt; são utilizados para garantir a ordem temporal dos dados.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;df_lags &amp;lt;- df %&amp;gt;%
+  
+  pivot_longer(-&amp;quot;data&amp;quot;, names_to = &amp;quot;var&amp;quot;, values_to = &amp;quot;l0&amp;quot;) %&amp;gt;%
+  
+  group_by(var) %&amp;gt;%
+  
+  arrange(data) %&amp;gt;%
+  
+  mutate(l1 = lag(l0, 1),
+         l2 = lag(l0, 2),
+         l3 = lag(l0, 3),
+         l4 = lag(l0, 4),
+         l5 = lag(l0, 5)) %&amp;gt;%
+  
+  pivot_longer(-c(data, var), names_to = &amp;quot;lag&amp;quot;, values_to = &amp;quot;valor&amp;quot;) %&amp;gt;%
+  
+  pivot_wider(names_from = c(&amp;quot;var&amp;quot;, &amp;quot;lag&amp;quot;), values_from = &amp;quot;valor&amp;quot;)
+
+tail(df_lags, 5)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A tibble: 5 x 19
+##   data       var1_l0 var1_l1 var1_l2 var1_l3 var1_l4 var1_l5 var2_l0 var2_l1
+##   &amp;lt;date&amp;gt;       &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;
+## 1 2020-03-01  -0.556   0.111   0.401   0.360   1.22   -0.446  0.878    0.895
+## 2 2020-04-01   1.79   -0.556   0.111   0.401   0.360   1.22   0.822    0.878
+## 3 2020-05-01   0.498   1.79   -0.556   0.111   0.401   0.360  0.689    0.822
+## 4 2020-06-01  -1.97    0.498   1.79   -0.556   0.111   0.401  0.554    0.689
+## 5 2020-07-01   0.701  -1.97    0.498   1.79   -0.556   0.111 -0.0619   0.554
+## # … with 10 more variables: var2_l2 &amp;lt;dbl&amp;gt;, var2_l3 &amp;lt;dbl&amp;gt;, var2_l4 &amp;lt;dbl&amp;gt;,
+## #   var2_l5 &amp;lt;dbl&amp;gt;, var3_l0 &amp;lt;dbl&amp;gt;, var3_l1 &amp;lt;dbl&amp;gt;, var3_l2 &amp;lt;dbl&amp;gt;, var3_l3 &amp;lt;dbl&amp;gt;,
+## #   var3_l4 &amp;lt;dbl&amp;gt;, var3_l5 &amp;lt;dbl&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;A grande vantagem desta abordagem é não precisar escrever o nome das variáveis para criar os &lt;em&gt;lags&lt;/em&gt; &amp;ndash; lembrem-se de que elas podem ser dezenas ou centenas. Adicionalmente, não precisamos criar funções auxiliares ou recorrer à geração dinâmica de variáveis &amp;ndash; o que no contexto do &lt;code&gt;tidyverse&lt;/code&gt; envolve algum tipo de &lt;em&gt;Non-Standard Evaluation&lt;/em&gt; &amp;ndash; nem sempre tão simples para quem tá começando.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Aviso legal&lt;/strong&gt;: Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Utilizando redes neurais para combinar modelos</title>

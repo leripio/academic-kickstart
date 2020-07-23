@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>dummies | RLeripio</title>
+    <link>/tags/dummies/</link>
+      <atom:link href="/tags/dummies/index.xml" rel="self" type="application/rss+xml" />
+    <description>dummies</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Wed, 08 Jul 2020 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/img/logo.png</url>
+      <title>dummies</title>
+      <link>/tags/dummies/</link>
+    </image>
+    
+    <item>
+      <title>Usando tidyr para criar dummies e lags</title>
+      <link>/post/usando-tidyr-pivot-para-criar-dummies-e-lags/</link>
+      <pubDate>Wed, 08 Jul 2020 00:00:00 +0000</pubDate>
+      <guid>/post/usando-tidyr-pivot-para-criar-dummies-e-lags/</guid>
+      <description>&lt;p&gt;Imagine que você tenha uma base de dados com dezenas (ou centenas) de variáveis e quer criar os &lt;em&gt;lags&lt;/em&gt; de 1 a 5 para cada uma destas variáveis. Além disso, precisa adicionar &lt;em&gt;dummies&lt;/em&gt; mensais para controlar algum fator sazonal. Esta tarefa faz parte do dia-a-dia de quem trabalha com modelos econométricos/machine learning e ter uma forma prática ajuda bastante.&lt;/p&gt;
+
+&lt;p&gt;Existem algumas formas de resolver esse problema. Uma bem simples e prática envolve o &lt;code&gt;tidyr&lt;/code&gt;, pacote do &lt;code&gt;tidyverse&lt;/code&gt; dedicado à manipulação de &lt;em&gt;frames&lt;/em&gt;. Suas principais funções são &lt;code&gt;pivot_longer&lt;/code&gt; e &lt;code&gt;pivot_wider&lt;/code&gt;, usadas para posicionar os dados, respectivamente, em formato &lt;em&gt;long&lt;/em&gt; e &lt;em&gt;wide&lt;/em&gt;. Fazendo uso correto destas funções e de seus argumentos, é possível resolver o problema de forma muito simples. Então vamos lá!&lt;/p&gt;
+
+&lt;p&gt;Para começar, vou criar uma &lt;em&gt;frame&lt;/em&gt; artificial contendo uma coluna com datas mensais e três colunas representando diferentes variáveis &amp;ndash; var1, var2 e var3. Lembrando que a abordagem é geral o suficiente para acomodar qualquer número de variáveis.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;library(tidyverse)
+library(lubridate)
+
+set.seed(123)
+
+df &amp;lt;- tibble(data = seq(ymd(&amp;quot;2019-01-01&amp;quot;), ymd(&amp;quot;2020-07-01&amp;quot;), by = &amp;quot;month&amp;quot;),
+             var1 = rnorm(19),
+             var2 = rnorm(19),
+             var3 = rnorm(19))
+
+tail(df, 5)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A tibble: 5 x 4
+##   data         var1    var2    var3
+##   &amp;lt;date&amp;gt;      &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;
+## 1 2020-03-01 -0.556  0.878  -0.0429
+## 2 2020-04-01  1.79   0.822   1.37  
+## 3 2020-05-01  0.498  0.689  -0.226 
+## 4 2020-06-01 -1.97   0.554   1.52  
+## 5 2020-07-01  0.701 -0.0619 -1.55
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;De início, vamos criar as &lt;em&gt;dummies&lt;/em&gt; sazonais. O primeiro passo é criar uma coluna com os meses da coluna de datas. A função &lt;code&gt;month&lt;/code&gt; do pacote &lt;code&gt;lubridate&lt;/code&gt; fornece uma forma conveniente para isso. Em seguida, criamos uma coluna com valores iguais a 1 &amp;ndash; isso ficará mais claro adiante e os nomes das colunas não importam. Por fim, recorremos à função &lt;code&gt;pivot_wider&lt;/code&gt;. Transpondo a coluna dos meses e preenchendo com os 1&amp;rsquo;s, obteríamos um &lt;em&gt;frame&lt;/em&gt; no qual cada mês é uma coluna onde o valor é igual a 1 para o mês correspondente na coluna data e &lt;code&gt;NA&lt;/code&gt; nos demais. Como nosso objetivo é ter 0&amp;rsquo;s no lugar desses &lt;code&gt;NA&lt;/code&gt;, usamos o argumento &lt;code&gt;values_fill&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;df_seasonal &amp;lt;- df %&amp;gt;%
+  
+  mutate(meses = month(data, label = T, abbr = T),
+         um = 1) %&amp;gt;%
+  
+  pivot_wider(names_from = meses, values_from = um, values_fill = list(um = 0))
+
+tail(df_seasonal, 5)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A tibble: 5 x 16
+##   data         var1    var2    var3   jan   fev   mar   abr   mai   jun   jul
+##   &amp;lt;date&amp;gt;      &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+## 1 2020-03-01 -0.556  0.878  -0.0429     0     0     1     0     0     0     0
+## 2 2020-04-01  1.79   0.822   1.37       0     0     0     1     0     0     0
+## 3 2020-05-01  0.498  0.689  -0.226      0     0     0     0     1     0     0
+## 4 2020-06-01 -1.97   0.554   1.52       0     0     0     0     0     1     0
+## 5 2020-07-01  0.701 -0.0619 -1.55       0     0     0     0     0     0     1
+## # … with 5 more variables: ago &amp;lt;dbl&amp;gt;, set &amp;lt;dbl&amp;gt;, out &amp;lt;dbl&amp;gt;, nov &amp;lt;dbl&amp;gt;,
+## #   dez &amp;lt;dbl&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Agora vamos criar os &lt;em&gt;lags&lt;/em&gt; das variáveis. Aqui a gente vai usar tanto a &lt;code&gt;pivot_longer&lt;/code&gt; como &lt;code&gt;pivot_wider&lt;/code&gt;. O primeiro passo é deixar o &lt;em&gt;frame&lt;/em&gt; no formato &lt;em&gt;long&lt;/em&gt;, isto é, as variáveis serão empilhadas em uma única coluna que eu chamarei de &amp;ldquo;var&amp;rdquo;. Os valores ficarão na coluna &amp;ldquo;l0&amp;rdquo; que denota o &lt;em&gt;lag&lt;/em&gt; 0.&lt;/p&gt;
+
+&lt;p&gt;Na sequência, vamos criar colunas com os &lt;em&gt;lags&lt;/em&gt; desejados: 1 a 5. Essas colunas também precisarão ser colocadas no formato &lt;em&gt;long&lt;/em&gt;. Finalmente, vamos expandir o &lt;em&gt;frame&lt;/em&gt; (formato &lt;em&gt;wider&lt;/em&gt;) reunindo as duas colunas: &amp;ldquo;var&amp;rdquo; e &amp;ldquo;lags&amp;rdquo;. Isto produzirá o resultado desejado. O &lt;code&gt;group_by&lt;/code&gt; e &lt;code&gt;arrange&lt;/code&gt; são utilizados para garantir a ordem temporal dos dados.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;df_lags &amp;lt;- df %&amp;gt;%
+  
+  pivot_longer(-&amp;quot;data&amp;quot;, names_to = &amp;quot;var&amp;quot;, values_to = &amp;quot;l0&amp;quot;) %&amp;gt;%
+  
+  group_by(var) %&amp;gt;%
+  
+  arrange(data) %&amp;gt;%
+  
+  mutate(l1 = lag(l0, 1),
+         l2 = lag(l0, 2),
+         l3 = lag(l0, 3),
+         l4 = lag(l0, 4),
+         l5 = lag(l0, 5)) %&amp;gt;%
+  
+  pivot_longer(-c(data, var), names_to = &amp;quot;lag&amp;quot;, values_to = &amp;quot;valor&amp;quot;) %&amp;gt;%
+  
+  pivot_wider(names_from = c(&amp;quot;var&amp;quot;, &amp;quot;lag&amp;quot;), values_from = &amp;quot;valor&amp;quot;)
+
+tail(df_lags, 5)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A tibble: 5 x 19
+##   data       var1_l0 var1_l1 var1_l2 var1_l3 var1_l4 var1_l5 var2_l0 var2_l1
+##   &amp;lt;date&amp;gt;       &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;
+## 1 2020-03-01  -0.556   0.111   0.401   0.360   1.22   -0.446  0.878    0.895
+## 2 2020-04-01   1.79   -0.556   0.111   0.401   0.360   1.22   0.822    0.878
+## 3 2020-05-01   0.498   1.79   -0.556   0.111   0.401   0.360  0.689    0.822
+## 4 2020-06-01  -1.97    0.498   1.79   -0.556   0.111   0.401  0.554    0.689
+## 5 2020-07-01   0.701  -1.97    0.498   1.79   -0.556   0.111 -0.0619   0.554
+## # … with 10 more variables: var2_l2 &amp;lt;dbl&amp;gt;, var2_l3 &amp;lt;dbl&amp;gt;, var2_l4 &amp;lt;dbl&amp;gt;,
+## #   var2_l5 &amp;lt;dbl&amp;gt;, var3_l0 &amp;lt;dbl&amp;gt;, var3_l1 &amp;lt;dbl&amp;gt;, var3_l2 &amp;lt;dbl&amp;gt;, var3_l3 &amp;lt;dbl&amp;gt;,
+## #   var3_l4 &amp;lt;dbl&amp;gt;, var3_l5 &amp;lt;dbl&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;A grande vantagem desta abordagem é não precisar escrever o nome das variáveis para criar os &lt;em&gt;lags&lt;/em&gt; &amp;ndash; lembrem-se de que elas podem ser dezenas ou centenas. Adicionalmente, não precisamos criar funções auxiliares ou recorrer à geração dinâmica de variáveis &amp;ndash; o que no contexto do &lt;code&gt;tidyverse&lt;/code&gt; envolve algum tipo de &lt;em&gt;Non-Standard Evaluation&lt;/em&gt; &amp;ndash; nem sempre tão simples para quem tá começando.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Aviso legal&lt;/strong&gt;: Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

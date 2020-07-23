@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>tracking | RLeripio</title>
+    <link>/tags/tracking/</link>
+      <atom:link href="/tags/tracking/index.xml" rel="self" type="application/rss+xml" />
+    <description>tracking</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Thu, 23 Jul 2020 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/img/logo.png</url>
+      <title>tracking</title>
+      <link>/tags/tracking/</link>
+    </image>
+    
+    <item>
+      <title>Como fazer um tracking eficiente das suas projeções</title>
+      <link>/post/como-fazer-um-tracking-eficiente-das-suas-projecoes/</link>
+      <pubDate>Thu, 23 Jul 2020 00:00:00 +0000</pubDate>
+      <guid>/post/como-fazer-um-tracking-eficiente-das-suas-projecoes/</guid>
+      <description>
+
+&lt;p&gt;Quem realiza projeções deve manter seus resultados armazenados, de modo que seja possível recuperá-los a qualquer momento. Isso permite, por exemplo, acompanhar o desempenho do modelo ao longo do tempo.&lt;/p&gt;
+
+&lt;p&gt;A tarefa pode ser feita em dois passos. Primeiro, criar um &lt;code&gt;tibble&lt;/code&gt; com três colunas: a data &lt;strong&gt;na&lt;/strong&gt; qual as projeções foram geradas; a data &lt;strong&gt;para a qual&lt;/strong&gt; as projeções foram feitas; e, por fim, os valores (ou distribuição) projetados. É possível também adicionar informações extras, como a especificação do modelo utilizado &amp;ndash; caso este seja atualizado regularmente.&lt;/p&gt;
+
+&lt;p&gt;O segundo passo é armazenar fisicamente a informação para que seja possível acessá-la mais tarde. Aqui, eu prefiro utilizar o objeto &lt;code&gt;RDS&lt;/code&gt; &amp;ndash; que é, basicamente, a estrutura para armazenagem de objetos do R. Uma boa ideia neste caso é exportar um arquivo &lt;code&gt;RDS&lt;/code&gt; contendo o &lt;code&gt;tibble&lt;/code&gt; a cada nova rodada de projeções e mantê-los em uma pasta.&lt;/p&gt;
+
+&lt;p&gt;Vamos a um exemplo prático de como fazer isso. Para utilizar um contexto atual, vamos assumir que nosso objetivo seja projetar todos os dias o número de novos casos de Covid-19 no Brasil para os próximos 7 dias a partir de um modelo univariado bem simples &amp;ndash; um &lt;code&gt;ETS&lt;/code&gt; automático do pacote &lt;code&gt;fable&lt;/code&gt; (a versão &lt;code&gt;tidy&lt;/code&gt; do pacote &lt;code&gt;forecast&lt;/code&gt;). Os dados são importados do repositório público do Wesley Cota (&lt;a href=&#34;https://github.com/wcota/covid19br/&#34; target=&#34;_blank&#34;&gt;https://github.com/wcota/covid19br/&lt;/a&gt;).&lt;/p&gt;
+
+&lt;h3 id=&#34;passo-1-carregar-pacotes-e-obter-os-dados&#34;&gt;Passo 1: carregar pacotes e obter os dados&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;library(tidyverse)
+library(lubridate)
+library(fable)
+library(tsibble)
+library(datacovidbr)
+
+dados_url &amp;lt;- &amp;quot;https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-states.csv&amp;quot;
+
+dadosBR &amp;lt;- readr::read_csv(dados_url) %&amp;gt;%
+  
+  dplyr::filter(country == &amp;quot;Brazil&amp;quot;, state == &amp;quot;TOTAL&amp;quot;,
+                date &amp;gt;= max(date) %m-% days(60)) %&amp;gt;%
+  
+  dplyr::select(date, newCases)
+
+tail(dadosBR, 3)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A tibble: 3 x 2
+##   date       newCases
+##   &amp;lt;date&amp;gt;        &amp;lt;dbl&amp;gt;
+## 1 2020-07-21    46927
+## 2 2020-07-22    62943
+## 3 2020-07-23    56111
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;passo-2-ajustar-o-modelo-ets-realizar-as-projeções-e-salvar-objeto-rds&#34;&gt;Passo 2: ajustar o modelo ETS, realizar as projeções e salvar objeto RDS&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;  proj &amp;lt;- dadosBR %&amp;gt;%
+  
+  as_tsibble() %&amp;gt;%
+  
+  model(ets = ETS(newCases)) %&amp;gt;%
+  
+  forecast(h = &amp;quot;7 days&amp;quot;) %&amp;gt;%
+  
+  dplyr::mutate(dateFrom = max(dadosBR$date))
+
+tail(proj, 3)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A fable: 3 x 5 [1D]
+## # Key:     .model [1]
+##   .model date       newCases .distribution     dateFrom  
+##   &amp;lt;chr&amp;gt;  &amp;lt;date&amp;gt;        &amp;lt;dbl&amp;gt; &amp;lt;dist&amp;gt;            &amp;lt;date&amp;gt;    
+## 1 ets    2020-07-28   46116. N(46116, 7.8e+07) 2020-07-23
+## 2 ets    2020-07-29   47461. N(47461, 8.2e+07) 2020-07-23
+## 3 ets    2020-07-30   47584. N(47584, 8.3e+07) 2020-07-23
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Em seguida, basta salvar o objeto. Uma boa ideia é incluir alguma referência no nome do arquivo: a data em que foram geradas as projeções ou a data da última observação disponível, por exemplo.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;saveRDS(proj, paste0(&amp;quot;tracking/forecast_&amp;quot;, unique(proj$dateFrom), &amp;quot;.rds&amp;quot;))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Para termos uma noção do que seria o resultado ao longo de um período maior, reproduzi a ação anterior por um período de 30 dias. Assim, existem na pasta 30 arquivos &lt;code&gt;.rds&lt;/code&gt; correspondendo à trajetória de projeção gerada em cada um dos 30 dias. Esses arquivos podem ser importados de uma só vez &amp;ndash; utilizando como identificador um padrão do nome ou simplesmente a extensão &amp;ndash; e empilhados para produzir as análises.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;proj_labs &amp;lt;- list.files(&amp;quot;tracking/&amp;quot;)[str_detect(list.files(&amp;quot;tracking/&amp;quot;), &amp;quot;.rds&amp;quot;)]
+
+proj_files &amp;lt;- purrr::map_dfr(.x = proj_labs, 
+                             .f = function(x) readRDS(paste0(&amp;quot;tracking/&amp;quot;, x)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Para finalizar, devemos adicionar os dados que foram realizados. Isto pode ser feito dando um &lt;code&gt;join&lt;/code&gt; com o nosso objeto &lt;code&gt;dadosBR&lt;/code&gt;, utilizando a coluna de data como identificador. Para que o &lt;code&gt;tibble&lt;/code&gt; fique mais claro, vamos renomear a coluna.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;proj_tracking &amp;lt;- dplyr::left_join(
+  
+  proj_files %&amp;gt;% 
+    
+    as_tibble() %&amp;gt;%
+    
+    dplyr::rename(&amp;quot;previsto&amp;quot; = &amp;quot;newCases&amp;quot;),
+  
+  dadosBR %&amp;gt;% dplyr::rename(&amp;quot;realizado&amp;quot; = &amp;quot;newCases&amp;quot;)
+  
+  )
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Podemos utilizar &lt;code&gt;proj_tracking&lt;/code&gt; de diversas formas para acompanhar o desempenho do nosso modelo. O gráfico abaixo, por exemplo, traz a evolução das projeções um passo à frente. Apesar de o modelo não ser tão aderente à magnitude, ele é capaz de capturar a sazonalidade da série. Vale lembrar que o modelo utilizado é bem simples e serve apenas para ilustração.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post/2020-07-17-como-fazer-um-tracking-eficiente-das-suas-projeções_files/figure-html/plot-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Por fim, também podemos utilizar os dados gerados anteriormente para computar métricas de acurácia para cada horizonte de previsão. Para isso, vamos utilizar a função &lt;code&gt;mape&lt;/code&gt; do pacote &lt;code&gt;yardstick&lt;/code&gt; para obter o erro absoluto percentual médio (MAPE). O pacote conta com diversas outras métricas conhecidas: &lt;code&gt;rmse&lt;/code&gt;, &lt;code&gt;mae&lt;/code&gt;, &lt;code&gt;mase&lt;/code&gt;, etc.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;library(yardstick)
+
+proj_acc &amp;lt;- proj_tracking %&amp;gt;%
+  
+  dplyr::group_by(dateFrom) %&amp;gt;%
+  
+  dplyr::mutate(step_ahead = 1:n()) %&amp;gt;%
+  
+  dplyr::group_by(step_ahead) %&amp;gt;%
+  
+  yardstick::mape(truth = realizado, estimate = previsto, na.rm = TRUE)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post/2020-07-17-como-fazer-um-tracking-eficiente-das-suas-projeções_files/figure-html/acc_plot-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Aviso legal&lt;/strong&gt;: Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

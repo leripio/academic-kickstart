@@ -3,33 +3,73 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>/post/como-fazer-um-tracking-eficiente-das-suas-projecoes/</loc>
+    <lastmod>2020-07-23T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/</loc>
+    <lastmod>2020-07-23T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/previsao/</loc>
+    <lastmod>2020-07-23T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/</loc>
+    <lastmod>2020-07-23T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2020-07-23T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/tracking/</loc>
+    <lastmod>2020-07-23T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/dummies/</loc>
+    <lastmod>2020-07-08T20:56:53-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/lags/</loc>
+    <lastmod>2020-07-08T20:56:53-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/rstats/</loc>
+    <lastmod>2020-07-08T20:56:53-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/tidyr/</loc>
+    <lastmod>2020-07-08T20:56:53-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/tidyverse/</loc>
+    <lastmod>2020-07-08T20:56:53-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/usando-tidyr-pivot-para-criar-dummies-e-lags/</loc>
+    <lastmod>2020-07-08T20:56:53-03:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/tags/combinacao/</loc>
     <lastmod>2019-09-08T19:26:54-03:00</lastmod>
   </url>
   
   <url>
-    <loc>/post/</loc>
-    <lastmod>2019-09-08T19:43:09-03:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/previsao/</loc>
-    <lastmod>2019-09-08T19:43:09-03:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/tags/redes-neurais/</loc>
     <lastmod>2019-09-08T18:43:18-03:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/</loc>
-    <lastmod>2019-09-08T19:43:09-03:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/</loc>
-    <lastmod>2019-09-08T19:43:09-03:00</lastmod>
   </url>
   
   <url>
