@@ -33,7 +33,6 @@
 library(lubridate)
 library(fable)
 library(tsibble)
-library(datacovidbr)
 
 dados_url &amp;lt;- &amp;quot;https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-states.csv&amp;quot;
 

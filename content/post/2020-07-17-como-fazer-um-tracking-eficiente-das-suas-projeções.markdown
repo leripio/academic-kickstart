@@ -32,7 +32,6 @@ library(tidyverse)
 library(lubridate)
 library(fable)
 library(tsibble)
-library(datacovidbr)
 
 dados_url <- "https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-states.csv"
 
