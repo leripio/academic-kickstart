@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.4.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="J. Renato Leripio">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Modelos hierárquicos são aqueles que utilizam alguma estrutura de desagregação para obter previsões. A abordagem mais comum, conhecida como bottom-up, consiste em ajustar um modelo específico para cada quebra da série principal a fim de obter a projeção do total.
+A grande vantagem é poder explorar um conjunto maior de informação e capturar dinâmicas individuais que se perderiam ao estimar diretamente o agregado. Entretanto, é preciso cuidado para não desagregar demais e adicionar apenas ruído às projeções.">
+
+  
+  <link rel="alternate" hreflang="en" href="/post/como-estimar-modelos-hierarquicos-de-maneira-eficiente/">
+
+  
+
+
+
+
+  
+
+  
+  
+  
+  <meta name="theme-color" content="#2962ff">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css" crossorigin="anonymous" title="hl-light">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+        
+      
+    
+
+    
+
+    
+
+  
+
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700|Roboto:400,400italic,700|Roboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.04a87a1cb9027e3c50f566322527c56f.css">
+
+  
+
+  
+  
+    <script>
+      window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+      ga('create', 'UA-120676890-1', 'auto');
+      
+      ga('require', 'eventTracker');
+      ga('require', 'outboundLinkTracker');
+      ga('require', 'urlChangeTracker');
+      ga('send', 'pageview');
+    </script>
+    <script async src="https://www.google-analytics.com/analytics.js"></script>
+    
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/autotrack/2.4.1/autotrack.js" integrity="sha512-HUmooslVKj4m6OBu0OgzjXXr+QuFYy/k7eLI5jdeEy/F4RSgMn6XRWRGkFi5IFaFgy7uFTkegp3Z0XnJf3Jq+g==" crossorigin="anonymous"></script>
+    
+  
+  
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/como-estimar-modelos-hierarquicos-de-maneira-eficiente/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="RLeripio">
+  <meta property="og:url" content="/post/como-estimar-modelos-hierarquicos-de-maneira-eficiente/">
+  <meta property="og:title" content="Como estimar modelos hierarquicos de maneira eficiente | RLeripio">
+  <meta property="og:description" content="Modelos hierárquicos são aqueles que utilizam alguma estrutura de desagregação para obter previsões. A abordagem mais comum, conhecida como bottom-up, consiste em ajustar um modelo específico para cada quebra da série principal a fim de obter a projeção do total.
+A grande vantagem é poder explorar um conjunto maior de informação e capturar dinâmicas individuais que se perderiam ao estimar diretamente o agregado. Entretanto, é preciso cuidado para não desagregar demais e adicionar apenas ruído às projeções."><meta property="og:image" content="/img/logo.png">
+  <meta property="twitter:image" content="/img/logo.png"><meta property="og:locale" content="en">
+  
+    
+      <meta property="article:published_time" content="2020-07-29T00:00:00&#43;00:00">
+    
+    <meta property="article:modified_time" content="2020-07-29T16:18:13-03:00">
+  
+
+  
+
+
+  
+
+
+
+
+
+  <title>Como estimar modelos hierarquicos de maneira eficiente | RLeripio</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Pesquisar</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Pesquisar..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/"><img src="/img/logo.png" alt="RLeripio"></a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Alterar navegação">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Sobre</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Blog</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article" itemscope itemtype="http://schema.org/Article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1 itemprop="name">Como estimar modelos hierarquicos de maneira eficiente</h1>
+
+  
+
+  
+    
+
+
+
+<meta content="2020-07-29 00:00:00 &#43;0000 UTC" itemprop="datePublished">
+<meta content="2020-07-29 16:18:13 -0300 -03" itemprop="dateModified">
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+          Última atualização em
+      
+    
+    <time>Jul 29, 2020</time>
+  </span>
+  
+
+  
+
+  
+
+  
+  
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="">Data Science</a>, <a href="">Previsão</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/como-estimar-modelos-hierarquicos-de-maneira-eficiente/&amp;text=Como%20estimar%20modelos%20hierarquicos%20de%20maneira%20eficiente" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/como-estimar-modelos-hierarquicos-de-maneira-eficiente/&amp;t=Como%20estimar%20modelos%20hierarquicos%20de%20maneira%20eficiente" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Como%20estimar%20modelos%20hierarquicos%20de%20maneira%20eficiente&amp;body=/post/como-estimar-modelos-hierarquicos-de-maneira-eficiente/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/como-estimar-modelos-hierarquicos-de-maneira-eficiente/&amp;title=Como%20estimar%20modelos%20hierarquicos%20de%20maneira%20eficiente" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Como%20estimar%20modelos%20hierarquicos%20de%20maneira%20eficiente%20/post/como-estimar-modelos-hierarquicos-de-maneira-eficiente/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/como-estimar-modelos-hierarquicos-de-maneira-eficiente/&amp;title=Como%20estimar%20modelos%20hierarquicos%20de%20maneira%20eficiente" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style" itemprop="articleBody">
+      
+
+<p>Modelos hierárquicos são aqueles que utilizam alguma estrutura de desagregação para obter previsões. A abordagem mais comum, conhecida como <em>bottom-up</em>, consiste em ajustar um modelo específico para cada quebra da série principal a fim de obter a projeção do total.</p>
+
+<p>A grande vantagem é poder explorar um conjunto maior de informação e capturar dinâmicas individuais que se perderiam ao estimar diretamente o agregado. Entretanto, é preciso cuidado para não desagregar demais e adicionar apenas ruído às projeções. A minha recomendação é modelar individualmente apenas aquelas séries para as quais existem boas variáveis explicativas ou, caso seja um modelo univariado, séries cujos componentes &ndash; <em>tendência-ciclo</em> e <em>sazonalidade</em> &ndash; sejam fáceis de extrair.</p>
+
+<p>No que diz respeito à implementação, um desafio se coloca: é preciso estimar um modelo para cada grupo de dados. Existe uma forma bem conveniente de lidar com esse tipo de tarefa que utiliza as funções <code>nest</code> do pacote <code>tidyr</code> e <code>map</code> do pacote <code>purrr</code>.</p>
+
+<p>No exemplo que segue, vamos assumir que o objetivo seja projetar a Produção Industrial (PIM-PF) brasileira a partir das estimativas para cada UF. Isto é, precisamos ajustar 14 modelos (nem todas as UF&rsquo;s estão contempladas na pesquisa), obter as projeções de cada um e, em seguida, computar o agregado.</p>
+
+<h2 id="passo-1-carregar-pacotes-e-importar-os-dados">Passo 1: carregar pacotes e importar os dados</h2>
+
+<pre><code class="language-r">library(sidrar)
+library(tidyverse)
+library(fable)
+library(tsibble)
+
+pim_ibge &lt;- sidrar::get_sidra(api = &quot;/t/3653/n3/all/v/3135/p/all/c544/129314/d/v3135%201&quot;)
+
+pim_ibge &lt;- pim_ibge %&gt;%
+  
+  dplyr::select(date = `Mês (Código)`,
+                uf   = `Unidade da Federação`,
+                valor = Valor) %&gt;%
+  
+  dplyr::mutate(date = lubridate::ymd(paste0(date, &quot;01&quot;)))
+</code></pre>
+
+<h2 id="passo-2-colocar-os-dados-no-formato-nest">Passo 2: colocar os dados no formato nest</h2>
+
+<pre><code class="language-r">pim_ibge_nest &lt;- pim_ibge %&gt;%
+  
+  dplyr::group_by(uf) %&gt;%
+  
+  tidyr::nest()
+
+pim_ibge_nest
+</code></pre>
+
+<pre><code>## # A tibble: 14 x 2
+## # Groups:   uf [14]
+##    uf                data              
+##    &lt;chr&gt;             &lt;list&gt;            
+##  1 Amazonas          &lt;tibble [221 × 2]&gt;
+##  2 Pará              &lt;tibble [221 × 2]&gt;
+##  3 Ceará             &lt;tibble [221 × 2]&gt;
+##  4 Pernambuco        &lt;tibble [221 × 2]&gt;
+##  5 Bahia             &lt;tibble [221 × 2]&gt;
+##  6 Minas Gerais      &lt;tibble [221 × 2]&gt;
+##  7 Espírito Santo    &lt;tibble [221 × 2]&gt;
+##  8 Rio de Janeiro    &lt;tibble [221 × 2]&gt;
+##  9 São Paulo         &lt;tibble [221 × 2]&gt;
+## 10 Paraná            &lt;tibble [221 × 2]&gt;
+## 11 Santa Catarina    &lt;tibble [221 × 2]&gt;
+## 12 Rio Grande do Sul &lt;tibble [221 × 2]&gt;
+## 13 Mato Grosso       &lt;tibble [221 × 2]&gt;
+## 14 Goiás             &lt;tibble [221 × 2]&gt;
+</code></pre>
+
+<p>Repare no <em>frame</em> criado pela função <code>nest</code>. Diferente das estruturas convencionais, ele permite armazenar objetos dentro das células. Na prática, isso funciona como uma lista sobre a qual podemos usar o <code>map</code> para generalizar operações (fazer um <em>loop</em>).</p>
+
+<p>Vamos usar esse recurso para ajustar um modelo <code>ARIMA</code> automático para cada uma das UF&rsquo;s. É possível criar modelos diferentes para cada uma das UF&rsquo;s. Para isso, precisaríamos incluir uma lista com as especificações na estrutura do <code>map</code>.</p>
+
+<h2 id="passo-3-estimar-os-modelos">Passo 3: estimar os modelos</h2>
+
+<pre><code class="language-r">pim_ibge_model &lt;- pim_ibge_nest %&gt;% 
+  
+  dplyr::mutate(modelos = purrr::map(.x = data, 
+                                     .f = function(x){
+    
+    x %&gt;%
+      
+      dplyr::mutate(date = tsibble::yearmonth(date)) %&gt;%
+      
+      as_tsibble() %&gt;%
+      
+      model(modelo = ARIMA(valor)) %&gt;%
+      
+      forecast(h = 12)
+    
+  }))
+</code></pre>
+
+<p>As projeções trazem informações sobre a distribuição das projeções para cada UF, o que permite plotar gráficos contendo intervalos como este abaixo.</p>
+
+<p><img src="/post/2020-07-29-como-estimar-modelos-hierarquicos-de-maneira-eficiente_files/figure-html/step7-1.png" width="672" /></p>
+
+<p>Sobre esse aspecto, cabe notar que para termos intervalos de previsão para o agregado devemos estimar a matriz de variância-covariância dos erros das projeções individuais. Não vamos abordar isso neste post e, portanto, vamos reter apenas o valor central (média).</p>
+
+<pre><code class="language-r">pim_ibge_prev &lt;- pim_ibge_model %&gt;%
+  
+  dplyr::mutate(previsao = purrr::map(.x = modelos, .f = function(x){
+    
+    x %&gt;% 
+      
+      as_tibble() %&gt;%
+      
+      dplyr::select(date, previsao = .mean)
+    
+  }))
+</code></pre>
+
+<h2 id="passo-4-computar-o-agregado">Passo 4: computar o agregado</h2>
+
+<p>Para finalizar, vamos desaninhar os nossos dados com <code>unnest</code> para voltar ao formato convencional e colocar o <em>frame</em> no formato <em>wide</em>. Com as projeções para cada UF em uma coluna, podemos computar a projeção para o Brasil fazendo a média das linhas. Note que isso pressupõe que cada UF tem o mesmo peso, o que é uma simplificação.</p>
+
+<p>A ressalva aqui é que utilizei a função <code>c_across</code> que é exclusiva da versão 1.0 do <code>dplyr</code>. Em tempo, essa nova versão é bem mais robusta para trabalhar com operações <code>rowwise</code>.</p>
+
+<pre><code class="language-r">pim_ibge_final &lt;- pim_ibge_prev %&gt;%
+  
+  dplyr::select(uf, previsao) %&gt;%
+  
+  tidyr::unnest(cols = c(previsao)) %&gt;%
+  
+  tidyr::pivot_wider(names_from = uf, values_from = previsao) %&gt;%
+  
+  dplyr::rowwise() %&gt;%
+  
+  dplyr::mutate(Brasil = mean(c_across(cols = -date)))
+</code></pre>
+
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="/tags/hierarquia/">hierarquia</a>
+  
+  <a class="badge badge-light" href="/tags/loops/">loops</a>
+  
+  <a class="badge badge-light" href="/tags/nested/">nested</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card" itemscope itemtype="http://schema.org/Person">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7eeb0c2576d20c67059d97d4d4326638_182584_250x250_fill_q90_lanczos_center.jpg" itemprop="image" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title" itemprop="name"><a href="/">J. Renato Leripio</a></h5>
+      <h6 class="card-subtitle">Quantitative Research Analyst</h6>
+      <p class="card-text" itemprop="description">Analista de pesquisa quantitativa na Itaú Asset Management.</p>
+      <ul class="network-icon" aria-hidden="true">
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+          <li>
+            <a itemprop="sameAs" href="mailto:leripiorenato@gmail.com" >
+              <i class="fas fa-envelope"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://github.com/leripio" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://www.linkedin.com/in/leripiorenato/" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://drive.google.com/open?id=1zjnAMdP4nlLmhGEocYkupo-JNppNWpuP" target="_blank" rel="noopener">
+              <i class="ai ai-cv"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+
+      
+      
+    
+
+    
+
+    
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/r.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    <script>
+      const search_index_filename = "/index.json";
+      const i18n = {
+        'placeholder': "Pesquisar...",
+        'results': "Resultados encontrados",
+        'no_results': "Sem resultados"
+      };
+      const content_type = {
+        'post': "Posts",
+        'project': "Projetos",
+        'publication' : "Publicações",
+        'talk' : "Palestras"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.16bbb3750feb7244c9bc409a5a4fe678.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" id="back_to_top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Citação</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copiar
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

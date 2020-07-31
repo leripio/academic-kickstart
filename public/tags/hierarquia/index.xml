@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>hierarquia | RLeripio</title>
+    <link>/tags/hierarquia/</link>
+      <atom:link href="/tags/hierarquia/index.xml" rel="self" type="application/rss+xml" />
+    <description>hierarquia</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Wed, 29 Jul 2020 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/img/logo.png</url>
+      <title>hierarquia</title>
+      <link>/tags/hierarquia/</link>
+    </image>
+    
+    <item>
+      <title>Como generalizar ações de maneira eficiente</title>
+      <link>/post/como-generalizar-acoes-de-maneira-eficiente/</link>
+      <pubDate>Wed, 29 Jul 2020 00:00:00 +0000</pubDate>
+      <guid>/post/como-generalizar-acoes-de-maneira-eficiente/</guid>
+      <description>
+
+&lt;p&gt;É muito comum no dia-a-dia precisarmos generalizar alguma ação sobre diversos conjuntos de dados. Por exemplo, quando desenvolvemos uma especificação para um modelo e queremos ajustá-la sobre várias unidades diferentes. Uma maneira eficiente de pensar essa tarefa é considerar dois objetos.&lt;/p&gt;
+
+&lt;p&gt;O primeiro é uma &lt;strong&gt;função&lt;/strong&gt; que realiza todas as ações pretendidas de forma genérica. O segundo é uma &lt;strong&gt;lista&lt;/strong&gt; cujos elementos correspondem ao conjunto de informações referente a cada unidade. No fim das contas, o objetivo será aplicar a função a cada um dos elementos da lista.&lt;/p&gt;
+
+&lt;p&gt;Existem algumas formas de alcançar este objetivo, seja através de &lt;em&gt;loops&lt;/em&gt; convencionais ou usando as variações da família &lt;code&gt;apply&lt;/code&gt;. O conjunto de pacotes &lt;code&gt;tidyverse&lt;/code&gt; fornece uma solução bem elegante e prática através das funções &lt;code&gt;nest&lt;/code&gt; e &lt;code&gt;map&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Imagine que precisamos projetar a Produção Industrial (PIM-PF/IBGE) para todas as UF&amp;rsquo;s disponíveis na pesquisa do IBGE. Como seria?&lt;/p&gt;
+
+&lt;h2 id=&#34;passo-1-carregar-pacotes-e-importar-os-dados&#34;&gt;Passo 1: carregar pacotes e importar os dados&lt;/h2&gt;
+
+&lt;p&gt;Para importar os dados, vamos acessar a API do IBGE através do pacote &lt;code&gt;sidrar&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;library(sidrar)
+library(tidyverse)
+library(fable)
+library(tsibble)
+
+dados_pim &amp;lt;- &amp;quot;/t/3653/n3/all/v/3135/p/all/c544/129314/d/v3135%201&amp;quot;
+
+pim_ibge &amp;lt;- sidrar::get_sidra(api = dados_pim)
+
+pim_ibge &amp;lt;- pim_ibge %&amp;gt;%
+  
+  dplyr::select(date = `Mês (Código)`,
+                uf   = `Unidade da Federação`,
+                valor = Valor) %&amp;gt;%
+  
+  dplyr::mutate(date = lubridate::ymd(paste0(date, &amp;quot;01&amp;quot;)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;passo-2-colocar-os-dados-no-formato-nest&#34;&gt;Passo 2: colocar os dados no formato nest&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;pim_ibge_nest &amp;lt;- pim_ibge %&amp;gt;%
+  
+  dplyr::group_by(uf) %&amp;gt;%
+  
+  tidyr::nest()
+
+pim_ibge_nest
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A tibble: 14 x 2
+## # Groups:   uf [14]
+##    uf                data              
+##    &amp;lt;chr&amp;gt;             &amp;lt;list&amp;gt;            
+##  1 Amazonas          &amp;lt;tibble [221 × 2]&amp;gt;
+##  2 Pará              &amp;lt;tibble [221 × 2]&amp;gt;
+##  3 Ceará             &amp;lt;tibble [221 × 2]&amp;gt;
+##  4 Pernambuco        &amp;lt;tibble [221 × 2]&amp;gt;
+##  5 Bahia             &amp;lt;tibble [221 × 2]&amp;gt;
+##  6 Minas Gerais      &amp;lt;tibble [221 × 2]&amp;gt;
+##  7 Espírito Santo    &amp;lt;tibble [221 × 2]&amp;gt;
+##  8 Rio de Janeiro    &amp;lt;tibble [221 × 2]&amp;gt;
+##  9 São Paulo         &amp;lt;tibble [221 × 2]&amp;gt;
+## 10 Paraná            &amp;lt;tibble [221 × 2]&amp;gt;
+## 11 Santa Catarina    &amp;lt;tibble [221 × 2]&amp;gt;
+## 12 Rio Grande do Sul &amp;lt;tibble [221 × 2]&amp;gt;
+## 13 Mato Grosso       &amp;lt;tibble [221 × 2]&amp;gt;
+## 14 Goiás             &amp;lt;tibble [221 × 2]&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Repare no &lt;em&gt;frame&lt;/em&gt; criado pela função &lt;code&gt;nest&lt;/code&gt;. Diferente das estruturas convencionais, ele permite armazenar objetos dentro das células &amp;ndash; aqui serão os &lt;code&gt;tibble&lt;/code&gt;&amp;rsquo;s contendo os dados para cada UF. Na prática, isso funciona como uma lista sobre a qual podemos usar o &lt;code&gt;map&lt;/code&gt; para aplicar a nossa função.&lt;/p&gt;
+
+&lt;h2 id=&#34;passo-3-criar-a-função&#34;&gt;Passo 3: criar a função&lt;/h2&gt;
+
+&lt;p&gt;Nossa função não precisa ser tão geral neste caso, dado que os nomes das colunas são iguais para todas as UF&amp;rsquo;s e o modelo também será o mesmo. Basicamente, a ação aqui é pegar o argumento &lt;code&gt;x&lt;/code&gt; que será um &lt;code&gt;tibble&lt;/code&gt; e retornar as projeções de 1 a 6 períodos à frente utilizando um &lt;code&gt;ARIMA&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;fc_arima &amp;lt;- function(x){
+    
+    x %&amp;gt;%
+      
+      dplyr::mutate(date = tsibble::yearmonth(date)) %&amp;gt;%
+      
+      as_tsibble() %&amp;gt;%
+      
+      model(modelo = ARIMA(valor)) %&amp;gt;%
+      
+      forecast(h = 6)
+    
+  }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;passo-4-estimar-os-modelos&#34;&gt;Passo 4: estimar os modelos&lt;/h2&gt;
+
+&lt;p&gt;De posse dos dados devidamente segmentados e da função, podemos usar o &lt;code&gt;map&lt;/code&gt; para finalizar o trabalho.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;pim_ibge_modelo &amp;lt;- pim_ibge_nest %&amp;gt;% 
+  
+  dplyr::mutate(modelos = purrr::map(.x = data, .f = fc_arima))
+
+pim_ibge_modelo
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A tibble: 14 x 3
+## # Groups:   uf [14]
+##    uf                data               modelos        
+##    &amp;lt;chr&amp;gt;             &amp;lt;list&amp;gt;             &amp;lt;list&amp;gt;         
+##  1 Amazonas          &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+##  2 Pará              &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+##  3 Ceará             &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+##  4 Pernambuco        &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+##  5 Bahia             &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+##  6 Minas Gerais      &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+##  7 Espírito Santo    &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+##  8 Rio de Janeiro    &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+##  9 São Paulo         &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+## 10 Paraná            &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+## 11 Santa Catarina    &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+## 12 Rio Grande do Sul &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+## 13 Mato Grosso       &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+## 14 Goiás             &amp;lt;tibble [221 × 2]&amp;gt; &amp;lt;fable [6 × 4]&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Cada célula da coluna &lt;code&gt;modelos&lt;/code&gt; contém o resultado da função, isto é, as informações sobre a distribuição das projeções para cada UF. Isto permite, por exemplo, plotar gráficos como estes abaixo.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post/2020-07-29-como-estimar-modelos-hierarquicos-de-maneira-eficiente_files/figure-html/step7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
