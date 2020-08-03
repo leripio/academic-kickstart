@@ -143,7 +143,7 @@ pim_ibge_modelo
 
 &lt;p&gt;Cada célula da coluna &lt;code&gt;modelos&lt;/code&gt; contém o resultado da função, isto é, as informações sobre a distribuição das projeções para cada UF. Isto permite acessar tais informações como se fossem uma lista e, por exemplo, plotar gráficos como estes abaixo.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;/post/2020-07-29-como-estimar-modelos-hierarquicos-de-maneira-eficiente_files/figure-html/step7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-07-29-como-generalizar-acoes-de-maneira-eficiente_files/figure-html/step7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Para funções com mais de um argumento, a função &lt;code&gt;map&lt;/code&gt; dispõe de variantes: &lt;code&gt;map2&lt;/code&gt; para dois argumentos e &lt;code&gt;pmap&lt;/code&gt; para múltiplos argumentos. Também seria factível usar um modelo para cada UF. O ponto aqui era mostrar que a abordagem &lt;strong&gt;função + lista&lt;/strong&gt; elimina em grande medida repetições desnecessárias de código, além da facilidade em escalar o trabalho apenas adicionando novos elementos à lista.&lt;/p&gt;
 </description>

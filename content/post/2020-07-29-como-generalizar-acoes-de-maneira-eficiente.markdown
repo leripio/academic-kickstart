@@ -154,6 +154,6 @@ pim_ibge_modelo
 
 Cada célula da coluna `modelos` contém o resultado da função, isto é, as informações sobre a distribuição das projeções para cada UF. Isto permite acessar tais informações como se fossem uma lista e, por exemplo, plotar gráficos como estes abaixo.
 
-<img src="/post/2020-07-29-como-estimar-modelos-hierarquicos-de-maneira-eficiente_files/figure-html/step7-1.png" width="672" />
+<img src="/post/2020-07-29-como-generalizar-acoes-de-maneira-eficiente_files/figure-html/step7-1.png" width="672" />
 
 Para funções com mais de um argumento, a função `map` dispõe de variantes: `map2` para dois argumentos e `pmap` para múltiplos argumentos. Também seria factível usar um modelo para cada UF. O ponto aqui era mostrar que a abordagem **função + lista** elimina em grande medida repetições desnecessárias de código, além da facilidade em escalar o trabalho apenas adicionando novos elementos à lista.
