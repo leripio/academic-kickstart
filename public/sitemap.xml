@@ -3,6 +3,41 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>/post/como-obter-rolling-windows-de-maneira-rapida-e-eficiente/</loc>
+    <lastmod>2020-08-10T17:30:10-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/</loc>
+    <lastmod>2020-08-10T17:30:10-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/</loc>
+    <lastmod>2020-08-10T17:30:10-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/rolling/</loc>
+    <lastmod>2020-08-10T17:30:10-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/rolling-window/</loc>
+    <lastmod>2020-08-10T17:30:10-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/rstats/</loc>
+    <lastmod>2020-08-10T17:30:10-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2020-08-10T17:30:10-03:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/post/como-generalizar-acoes-de-maneira-eficiente/</loc>
     <lastmod>2020-07-29T16:18:13-03:00</lastmod>
   </url>
@@ -19,21 +54,6 @@
   
   <url>
     <loc>/tags/nest/</loc>
-    <lastmod>2020-07-29T16:18:13-03:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/post/</loc>
-    <lastmod>2020-07-29T16:18:13-03:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/</loc>
-    <lastmod>2020-07-29T16:18:13-03:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/</loc>
     <lastmod>2020-07-29T16:18:13-03:00</lastmod>
   </url>
   
@@ -59,11 +79,6 @@
   
   <url>
     <loc>/tags/lags/</loc>
-    <lastmod>2020-07-08T20:56:53-03:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/rstats/</loc>
     <lastmod>2020-07-08T20:56:53-03:00</lastmod>
   </url>
   

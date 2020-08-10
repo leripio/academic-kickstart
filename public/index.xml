@@ -5,12 +5,86 @@
     <link>/</link>
       <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     <description>RLeripio</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Thu, 30 Jul 2020 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Mon, 10 Aug 2020 00:00:00 +0000</lastBuildDate>
     <image>
       <url>/img/logo.png</url>
       <title>RLeripio</title>
       <link>/</link>
     </image>
+    
+    <item>
+      <title>Como obter rolling windows de maneira rápida e eficiente</title>
+      <link>/post/como-obter-rolling-windows-de-maneira-rapida-e-eficiente/</link>
+      <pubDate>Mon, 10 Aug 2020 00:00:00 +0000</pubDate>
+      <guid>/post/como-obter-rolling-windows-de-maneira-rapida-e-eficiente/</guid>
+      <description>
+
+&lt;p&gt;No post &lt;a href=&#34;https://www.rleripio.com.br/post/como-generalizar-acoes-de-maneira-eficiente/&#34; target=&#34;_blank&#34;&gt;anterior&lt;/a&gt;, apresentei uma forma bastante conveniente de generalizar ações dispensando &lt;em&gt;for-loops&lt;/em&gt; tradicionais. A abordagem permite eliminar indexações trabalhosas e organizar os objetos de maneira bem prática.&lt;/p&gt;
+
+&lt;p&gt;Outra tarefa muito presente no dia-a-dia de quem trabalha com dados é obter versões em janela móvel para alguma função. O exemplo mais simples seria a média móvel, a qual conta com implementações eficientes em diversos pacotes &amp;ndash; eu recomendo o &lt;code&gt;RcppRoll&lt;/code&gt; que, além da média móvel, também computa outras estatísticas.&lt;/p&gt;
+
+&lt;p&gt;Entretanto, na maioria dos casos não existe uma versão &lt;em&gt;rolling&lt;/em&gt; da função desejada &amp;ndash; sobretudo para aquelas criadas por nós para atender a alguma demanda específica. É possível obter resultados &lt;em&gt;rolling&lt;/em&gt; aplicando a função desejada sobre subconjuntos dos dados e, novamente, o post &lt;a href=&#34;https://www.rleripio.com.br/post/como-generalizar-acoes-de-maneira-eficiente/&#34; target=&#34;_blank&#34;&gt;anterior&lt;/a&gt; pode ajudar nisso &amp;ndash; pense em cada subconjunto como um elemento de uma lista.&lt;/p&gt;
+
+&lt;p&gt;Porém, existe uma forma ainda mais prática de fazer isso através da função &lt;code&gt;rollify&lt;/code&gt; do pacote &lt;code&gt;tibbletime&lt;/code&gt;. A ideia da função é criar versões &lt;em&gt;rolling&lt;/em&gt; da função desejada e a integração com &lt;code&gt;tibble&lt;/code&gt;&amp;rsquo;s torna possível retornar as saídas de maneira organizada.&lt;/p&gt;
+
+&lt;p&gt;A sintaxe é bem simples e, para ilustrar, vamos computar uma &lt;em&gt;rolling regression&lt;/em&gt; &amp;ndash; isto é, obter o coeficiente de uma regressão em janela móvel. Isso é bem útil nas aplicações em que o coeficiente de interesse varia no tempo. No exemplo, vou retornar o coeficiente autoregressivo de um modelo &lt;strong&gt;SARIMA(1,0,0)(1,0,0)[12]&lt;/strong&gt; ajustado à série histórica do IPCA como forma de medir a inércia da inflação ao longo do tempo.&lt;/p&gt;
+
+&lt;h3 id=&#34;passo-1-carregar-pacotes-e-importar-os-dados&#34;&gt;Passo 1: carregar pacotes e importar os dados&lt;/h3&gt;
+
+&lt;p&gt;Para baixar a série do IPCA dos preços livres, vou utilizar o pacote &lt;code&gt;rbcb&lt;/code&gt; do Wilson Freitas. Este pacote não está mais disponível no CRAN, mas pode ser instalado a partir do &lt;a href=&#34;https://github.com/wilsonfreitas/rbcb&#34; target=&#34;_blank&#34;&gt;GitHub&lt;/a&gt; do autor através do seguinte comando:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;devtools::install_github(&#39;wilsonfreitas/rbcb&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;library(rbcb)
+library(tidyverse)
+library(tibbletime)
+
+ipca_livres &amp;lt;- rbcb::get_series(code = list(&amp;quot;ipca&amp;quot; = 11428))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;passo-2-criar-a-função-que-ajusta-o-modelo-e-retorna-o-coeficiente-ar-e-seu-erro-padrão&#34;&gt;Passo 2: criar a função que ajusta o modelo e retorna o coeficiente AR e seu erro padrão&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;get_ar1 &amp;lt;- function(x){
+  
+x_ts &amp;lt;- ts(x, frequency = 12)  
+  
+fit_sar1 &amp;lt;- arima(x_ts, order = c(1,0,0), seasonal = list(order = c(1,0,0)))
+
+out &amp;lt;- list(&amp;quot;beta&amp;quot; = fit_sar1[[&amp;quot;coef&amp;quot;]][&amp;quot;ar1&amp;quot;],
+            &amp;quot;se&amp;quot;   = fit_sar1[[&amp;quot;var.coef&amp;quot;]][&amp;quot;ar1&amp;quot;, &amp;quot;ar1&amp;quot;] %&amp;gt;% sqrt())
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;passo-3-criar-a-versão-rolling-da-função&#34;&gt;Passo 3: criar a versão &lt;em&gt;rolling&lt;/em&gt; da função&lt;/h3&gt;
+
+&lt;p&gt;O argumento &lt;code&gt;window&lt;/code&gt; controla o tamanho da janela. O argumento &lt;code&gt;unlist = FALSE&lt;/code&gt; garante que os resultados ficarão no formato de lista. Isso é necessário aqui porque nosso &lt;em&gt;output&lt;/em&gt; é uma lista com dois objetos: o coeficiente e seu erro padrão.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;roll_get_ar1 &amp;lt;- tibbletime::rollify(.f = get_ar1, window = 60, unlist = FALSE)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Na sequência, usamos a função criada acima para gerar um &lt;code&gt;tibble&lt;/code&gt; contendo uma coluna com o coeficiente AR(1) e outra com o erro-padrão. O &lt;code&gt;map&lt;/code&gt; é utilizado para extrair os elementos da lista.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;inercia &amp;lt;- ipca_livres %&amp;gt;%
+  
+  dplyr::mutate(out = roll_get_ar1(ipca)) %&amp;gt;%
+  
+  dplyr::filter(!is.na(out)) %&amp;gt;%
+  
+  dplyr::mutate(ar1 = purrr::map_dbl(.x = out, .f = function(x) x$beta),
+                se  = purrr::map_dbl(.x = out, .f = function(x) x$se))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Por fim, podemos gerar um gráfico como este abaixo contendo a inércia estimada ao longo do tempo, bem como a significância do coeficiente $ \pm 1.96 \times \text{se} $. Também adicionamos uma curva suavizada (loess) para deixar a trajetória mais comportada.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post/2020-08-10-como-obter-rolling-windows-de-maneira-rápida-e-eficiente_files/figure-html/plot-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Vale ressaltar que o modelo SARIMA é bem simples e não controla os efeitos de diversos fatores sobre a inflação &amp;ndash; atividade, câmbio, etc. Portanto, para medir adequadamente o grau de inércia precisaríamos adicionar mais estrutura à especificação.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Aviso legal&lt;/strong&gt;: Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Como generalizar ações de maneira eficiente</title>
