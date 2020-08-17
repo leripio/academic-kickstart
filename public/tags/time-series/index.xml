@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>time series | RLeripio</title>
+    <link>/tags/time-series/</link>
+      <atom:link href="/tags/time-series/index.xml" rel="self" type="application/rss+xml" />
+    <description>time series</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Sun, 16 Aug 2020 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/img/logo.png</url>
+      <title>time series</title>
+      <link>/tags/time-series/</link>
+    </image>
+    
+    <item>
+      <title>Como automatizar o tratamento de séries não-estacionárias</title>
+      <link>/post/como-automatizar-o-tratamento-de-series-nao-estacionarias/</link>
+      <pubDate>Sun, 16 Aug 2020 00:00:00 +0000</pubDate>
+      <guid>/post/como-automatizar-o-tratamento-de-series-nao-estacionarias/</guid>
+      <description>
+
+&lt;p&gt;Alguns métodos para séries temporais exigem que as séries sejam estacionárias. Além das questões estatísticas associadas aos estimadores, regredir séries integradas coloca em dúvida a validade do modelo &amp;ndash; o problema da regressão espúria.&lt;/p&gt;
+
+&lt;p&gt;Um procedimento padrão ao trabalhar com séries temporais é, portanto, checar se as séries são estacionárias e, caso não sejam, aplicar algum tratamento &amp;ndash; geralmente isso envolve tomar a primeira diferença da série.&lt;/p&gt;
+
+&lt;p&gt;Apesar de simples, este procedimento envolve certo trabalho. Em particular quando temos um conjunto grande de variáveis, não parece razoável repetir o processo para cada uma delas.&lt;/p&gt;
+
+&lt;p&gt;A maneira mais geral de automatizar esta tarefa é criar uma função que aplica os testes de raiz unitária sobre a série, compara a estatística com o valor crítico do teste e diferencia a série caso exista evidência de não-estacionaridade.&lt;/p&gt;
+
+&lt;p&gt;O pacote &lt;code&gt;forecast&lt;/code&gt; resolveu boa parte desse fluxo com a função &lt;code&gt;ndiffs&lt;/code&gt;. A função aplica os testes mais comuns &amp;ndash; ADF, PP e KPSS &amp;ndash; e retorna o número de vezes que a série precisa ser diferenciada. Nosso trabalho se reduz, portanto, a reter esta informação e usá-la para computar as diferenças.&lt;/p&gt;
+
+&lt;p&gt;Vamos a um exemplo de como fazer isso a partir de um conjunto simulado de séries temporais estacionárias e não-estacionárias.&lt;/p&gt;
+
+&lt;h3 id=&#34;passo-1-carregar-pacotes-e-simular-os-dados&#34;&gt;Passo 1: Carregar pacotes e simular os dados&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;# 1. Carregar pacotes
+
+library(tidyverse)
+library(forecast)
+library(timetk)
+
+# 2. Simular séries
+
+set.seed(123)
+
+mu &amp;lt;- list(-2, 0, 2, 4, 6) # média das séries
+
+sigma &amp;lt;- list(1, 2, 3, 4, 5) # variância das séries
+
+series &amp;lt;- purrr::map2_dfc(mu, sigma, rnorm, n = 100) %&amp;gt;% 
+  
+  dplyr::mutate(date = seq.Date(from = as.Date(&amp;quot;2010-01-01&amp;quot;), 
+                                length.out = 100, by = &amp;quot;month&amp;quot;)) %&amp;gt;%
+  
+  dplyr::mutate_at(vars(-date), ~ timetk::tk_ts(.)) %&amp;gt;%
+  
+  magrittr::set_colnames(c(paste0(&amp;quot;Serie&amp;quot;, seq_along(mu)), &amp;quot;date&amp;quot;))
+
+# 3. Tornar as séries Serie1 e Serie3 não-estacionárias
+
+series_aux &amp;lt;- series %&amp;gt;% 
+  
+  dplyr::mutate_at(vars(Serie1, Serie3), ~ cumsum(.))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post/2020-08-16-como-automatizar-o-tratamento-de-séries-não-estacionárias_files/figure-html/graf-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;passo-2-checar-o-número-de-diferenças-necessárias&#34;&gt;Passo 2: checar o número de diferenças necessárias&lt;/h3&gt;
+
+&lt;p&gt;Aqui vamos utilizar a função &lt;code&gt;ndiffs&lt;/code&gt; para determinar o número de diferenças necessárias para tornar a série estacionária, porém com alguns avanços. Primeiro, vamos utilizar os três testes disponíveis: ADF, PP e KPSS.&lt;/p&gt;
+
+&lt;p&gt;Em seguida, vamos criar uma regra para definir se a série será ou não diferenciada a partir dos resultados anteriores. Como esse é um exercício simulado, sabemos que as séries não-estacionárias &amp;ndash; &lt;code&gt;Serie1&lt;/code&gt; e &lt;code&gt;Serie3&lt;/code&gt; &amp;ndash; são I(1), isto é, só precisam de uma diferença.&lt;/p&gt;
+
+&lt;p&gt;Portanto, os testes devem retornar 1 para &lt;code&gt;Serie1&lt;/code&gt; e &lt;code&gt;Serie3&lt;/code&gt; e 0 para as demais. Assim, nossa regra será a seguinte: se a soma dos resultados for superior a 2, ou seja, mais de um teste retornar necessidade de uma diferença, esta série deverá ser diferenciada. Vamosa usar uma coluna &lt;code&gt;Diferenciar&lt;/code&gt; = &amp;ldquo;SIM&amp;rdquo; neste caso e &amp;ldquo;NAO&amp;rdquo; para o caso contrário.&lt;/p&gt;
+
+&lt;p&gt;A ressalva aqui é que esta é uma regra bem simples para atender ao nosso exercício. Os interessados podem adequá-la aos seus próprios objetivos.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;testes &amp;lt;- list(kpss = &amp;quot;kpss&amp;quot;, pp = &amp;quot;pp&amp;quot;, adf = &amp;quot;adf&amp;quot;)
+
+ndiffs_testes &amp;lt;- function(x) purrr::map(testes, function(y){
+  
+  forecast::ndiffs(x, alpha = 0.05, y)
+  
+  })
+
+series_ndiffs &amp;lt;- series_aux %&amp;gt;%
+  
+  dplyr::select(-date) %&amp;gt;%
+  
+  purrr::map(.f = ndiffs_testes) %&amp;gt;%
+  
+  plyr::ldply(bind_rows) %&amp;gt;%
+  
+  dplyr::mutate(Diferenciar = ifelse(kpss + adf + pp &amp;gt;= 2, &amp;quot;SIM&amp;quot;, &amp;quot;NAO&amp;quot;))
+
+
+series_ndiffs
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;##      .id kpss pp adf Diferenciar
+## 1 Serie1    1  1   1         SIM
+## 2 Serie2    0  0   0         NAO
+## 3 Serie3    1  1   1         SIM
+## 4 Serie4    0  0   0         NAO
+## 5 Serie5    0  0   0         NAO
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;passo-4-diferenciar-as-séries-não-estacionárias&#34;&gt;Passo 4: Diferenciar as séries não-estacionárias&lt;/h3&gt;
+
+&lt;p&gt;O último passo consiste em diferenciar aquelas séries consideradas não-estacionárias que receberam &amp;ldquo;SIM&amp;rdquo; na etapa anterior.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;# Reter o id das séries não-estacionárias
+
+series_labs &amp;lt;- series_ndiffs %&amp;gt;% 
+  
+  dplyr::filter(Diferenciar == &amp;quot;SIM&amp;quot;) %&amp;gt;% 
+  
+  dplyr::pull(.id)
+
+# Diferenciar 
+
+series_dif &amp;lt;- series_aux %&amp;gt;% 
+  
+  dplyr::mutate_at(vars(all_of(series_labs)), ~ . - dplyr::lag(., 1))
+
+head(series_dif, 5)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A tibble: 5 x 6
+##   Serie1 Serie2 Serie3 Serie4 Serie5 date      
+##    &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt; &amp;lt;date&amp;gt;    
+## 1 NA     -1.42  NA      1.14   5.63  2010-01-01
+## 2 -2.23   0.514  5.94   0.989  0.157 2010-02-01
+## 3 -0.441 -0.493  1.20   0.246  2.83  2010-03-01
+## 4 -1.93  -0.695  3.63  -0.210  5.86  2010-04-01
+## 5 -1.87  -1.90   0.757  2.25   9.35  2010-05-01
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Por fim, o pacote &lt;code&gt;forecast&lt;/code&gt; também dispõe da função &lt;code&gt;nsdiffs&lt;/code&gt; que realiza o mesmo procedimento para séries que necessitam de diferenças sazonais.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Aviso legal&lt;/strong&gt;: Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
