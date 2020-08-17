@@ -76,7 +76,7 @@ Aqui vamos utilizar a função `ndiffs` para determinar o número de diferenças
 
 Em seguida, vamos criar uma regra para definir se a série será ou não diferenciada a partir dos resultados anteriores. Como esse é um exercício simulado, sabemos que as séries não-estacionárias -- `Serie1` e `Serie3` -- são I(1), isto é, só precisam de uma diferença. 
 
-Portanto, os testes devem retornar 1 para `Serie1` e `Serie3` e 0 para as demais. Assim, nossa regra será a seguinte: se a soma dos resultados for superior a 2, ou seja, mais de um teste retornar necessidade de uma diferença, esta série deverá ser diferenciada. Vamosa usar uma coluna `Diferenciar` = "SIM" neste caso e "NAO" para o caso contrário.
+Portanto, os testes devem retornar 1 para `Serie1` e `Serie3` e 0 para as demais. Assim, nossa regra será a seguinte: se a soma dos resultados for superior a 2, ou seja, mais de um teste retornar necessidade de uma diferença, esta série deverá ser diferenciada. Vamos usar uma coluna `Diferenciar` = "SIM" neste caso e "NAO" para o caso contrário.
 
 A ressalva aqui é que esta é uma regra bem simples para atender ao nosso exercício. Os interessados podem adequá-la aos seus próprios objetivos.
 

@@ -527,7 +527,7 @@ series_aux &lt;- series %&gt;%
 
 <p>Em seguida, vamos criar uma regra para definir se a série será ou não diferenciada a partir dos resultados anteriores. Como esse é um exercício simulado, sabemos que as séries não-estacionárias &ndash; <code>Serie1</code> e <code>Serie3</code> &ndash; são I(1), isto é, só precisam de uma diferença.</p>
 
-<p>Portanto, os testes devem retornar 1 para <code>Serie1</code> e <code>Serie3</code> e 0 para as demais. Assim, nossa regra será a seguinte: se a soma dos resultados for superior a 2, ou seja, mais de um teste retornar necessidade de uma diferença, esta série deverá ser diferenciada. Vamosa usar uma coluna <code>Diferenciar</code> = &ldquo;SIM&rdquo; neste caso e &ldquo;NAO&rdquo; para o caso contrário.</p>
+<p>Portanto, os testes devem retornar 1 para <code>Serie1</code> e <code>Serie3</code> e 0 para as demais. Assim, nossa regra será a seguinte: se a soma dos resultados for superior a 2, ou seja, mais de um teste retornar necessidade de uma diferença, esta série deverá ser diferenciada. Vamos usar uma coluna <code>Diferenciar</code> = &ldquo;SIM&rdquo; neste caso e &ldquo;NAO&rdquo; para o caso contrário.</p>
 
 <p>A ressalva aqui é que esta é uma regra bem simples para atender ao nosso exercício. Os interessados podem adequá-la aos seus próprios objetivos.</p>
 
