@@ -5,12 +5,36 @@
     <link>/tags/</link>
       <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     <description>Tags</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Sun, 16 Aug 2020 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Sat, 22 Aug 2020 00:00:00 +0000</lastBuildDate>
     <image>
       <url>/img/logo.png</url>
       <title>Tags</title>
       <link>/tags/</link>
     </image>
+    
+    <item>
+      <title>dlm</title>
+      <link>/tags/dlm/</link>
+      <pubDate>Sat, 22 Aug 2020 00:00:00 +0000</pubDate>
+      <guid>/tags/dlm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>dynamic linear models</title>
+      <link>/tags/dynamic-linear-models/</link>
+      <pubDate>Sat, 22 Aug 2020 00:00:00 +0000</pubDate>
+      <guid>/tags/dynamic-linear-models/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>time varying</title>
+      <link>/tags/time-varying/</link>
+      <pubDate>Sat, 22 Aug 2020 00:00:00 +0000</pubDate>
+      <guid>/tags/time-varying/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>raiz unitaria</title>

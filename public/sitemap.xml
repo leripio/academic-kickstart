@@ -3,12 +3,42 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>/post/como-automatizar-o-tratamento-de-series-nao-estacionarias/</loc>
-    <lastmod>2020-08-16T19:29:27-03:00</lastmod>
+    <loc>/tags/dlm/</loc>
+    <lastmod>2020-08-22T21:57:21-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/dynamic-linear-models/</loc>
+    <lastmod>2020-08-22T21:57:21-03:00</lastmod>
   </url>
   
   <url>
     <loc>/post/</loc>
+    <lastmod>2020-08-22T21:57:21-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/</loc>
+    <lastmod>2020-08-22T21:57:21-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2020-08-22T21:57:21-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/time-varying/</loc>
+    <lastmod>2020-08-22T21:57:21-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/usando-dlm-para-estimar-coeficientes-variantes-no-tempo/</loc>
+    <lastmod>2020-08-22T21:57:21-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/como-automatizar-o-tratamento-de-series-nao-estacionarias/</loc>
     <lastmod>2020-08-16T19:29:27-03:00</lastmod>
   </url>
   
@@ -18,17 +48,7 @@
   </url>
   
   <url>
-    <loc>/</loc>
-    <lastmod>2020-08-16T19:29:27-03:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/tags/series-temporais/</loc>
-    <lastmod>2020-08-16T19:29:27-03:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/</loc>
     <lastmod>2020-08-16T19:29:27-03:00</lastmod>
   </url>
   
