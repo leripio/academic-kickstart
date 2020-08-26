@@ -126,7 +126,7 @@ Os valores do coeficiente ao longo do tempo podem ser obtidos em `dlm.fit$states
 
 <img src="/post/2020-08-22-usando-dlm-para-estimar-coeficientes-variantes-no-tempo_files/figure-html/plot-1.png" width="672" />
 
-O principal mensagem aqui é que, enquanto a estimação estática parece ser uma boa estimativa do coeficiente até meados de 2016, o mesmo não pode ser dito para o período seguinte. Em particular, isto tende a ocorrer quando existem mudanças estruturais importantes na série de interesse.
+A principal mensagem aqui é que, enquanto a estimação estática parece ser uma boa estimativa do coeficiente até meados de 2016, o mesmo não pode ser dito para o período seguinte. Em particular, isto tende a ocorrer quando existem mudanças estruturais importantes na série de interesse.
 
 No caso específico do nosso exercício, a literatura reporta que a persistência inflacionária guarda relação direta com o nível da inflação e inversa com a credibilidade da autoridade monetária. Nesse sentido, apesar da nossa especificação não controlar diversos fatores relevantes, faz sentido pensar que a persistência deva ser menor no período recente.
 

@@ -117,7 +117,7 @@ dlm.fit &amp;lt;- MARSS(y,
 
 &lt;p&gt;&lt;img src=&#34;/post/2020-08-22-usando-dlm-para-estimar-coeficientes-variantes-no-tempo_files/figure-html/plot-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 
-&lt;p&gt;O principal mensagem aqui é que, enquanto a estimação estática parece ser uma boa estimativa do coeficiente até meados de 2016, o mesmo não pode ser dito para o período seguinte. Em particular, isto tende a ocorrer quando existem mudanças estruturais importantes na série de interesse.&lt;/p&gt;
+&lt;p&gt;A principal mensagem aqui é que, enquanto a estimação estática parece ser uma boa estimativa do coeficiente até meados de 2016, o mesmo não pode ser dito para o período seguinte. Em particular, isto tende a ocorrer quando existem mudanças estruturais importantes na série de interesse.&lt;/p&gt;
 
 &lt;p&gt;No caso específico do nosso exercício, a literatura reporta que a persistência inflacionária guarda relação direta com o nível da inflação e inversa com a credibilidade da autoridade monetária. Nesse sentido, apesar da nossa especificação não controlar diversos fatores relevantes, faz sentido pensar que a persistência deva ser menor no período recente.&lt;/p&gt;
 
