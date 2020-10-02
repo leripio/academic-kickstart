@@ -28,12 +28,11 @@
   
     
   
-  <meta name="description" content="Em post recente mostrei como obter versões rolling para funções específicas e como isso poderia ser utilizado para gerar coeficientes variantes no tempo em uma regressão.
-Uma limitação desta abordagem é que precisamos definir janelas para a estimação, o que pode alterar sensivelmente os resultados. Neste sentido, é desejável uma forma estrutural de obter coeficientes variantes no tempo.
-Uma classe específica de modelos que atende a esse propósito é o Dynamic linear model (DLM).">
+  <meta name="description" content="Nem sempre empregamos modelos econométricos ou de machine learning para fazer projeções. É comum termos à disposição alguma forma funcional calibrada ou parâmetros que nos informam sobre como evolui determinada variável. A partir destas informações, podemos conjecturar as realizações futuras a partir de cenários para as variáveis explicativas.
+Imagine, por exemplo, que o IPCA dos preços livres aumente cerca de 0.5p.p para cada 10% de depreciação cambial. Podemos, neste caso, fazer projeções para o IPCA com base no que esperamos para a taxa de câmbio em diferentes cenários (tudo o mais constante).">
 
   
-  <link rel="alternate" hreflang="en" href="/post/usando-dlm-para-estimar-coeficientes-variantes-no-tempo/">
+  <link rel="alternate" hreflang="en" href="/post/como-obter-distribuicoes-a-partir-de-cenarios/">
 
   
 
@@ -114,7 +113,7 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
   <link rel="icon" type="image/png" href="/img/icon-32.png">
   <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
 
-  <link rel="canonical" href="/post/usando-dlm-para-estimar-coeficientes-variantes-no-tempo/">
+  <link rel="canonical" href="/post/como-obter-distribuicoes-a-partir-de-cenarios/">
 
   
   
@@ -127,17 +126,16 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
   <meta property="twitter:card" content="summary">
   
   <meta property="og:site_name" content="RLeripio">
-  <meta property="og:url" content="/post/usando-dlm-para-estimar-coeficientes-variantes-no-tempo/">
-  <meta property="og:title" content="Usando DLM para estimar coeficientes variantes no tempo | RLeripio">
-  <meta property="og:description" content="Em post recente mostrei como obter versões rolling para funções específicas e como isso poderia ser utilizado para gerar coeficientes variantes no tempo em uma regressão.
-Uma limitação desta abordagem é que precisamos definir janelas para a estimação, o que pode alterar sensivelmente os resultados. Neste sentido, é desejável uma forma estrutural de obter coeficientes variantes no tempo.
-Uma classe específica de modelos que atende a esse propósito é o Dynamic linear model (DLM)."><meta property="og:image" content="/img/logo.png">
+  <meta property="og:url" content="/post/como-obter-distribuicoes-a-partir-de-cenarios/">
+  <meta property="og:title" content="Como medir a incerteza em cenários | RLeripio">
+  <meta property="og:description" content="Nem sempre empregamos modelos econométricos ou de machine learning para fazer projeções. É comum termos à disposição alguma forma funcional calibrada ou parâmetros que nos informam sobre como evolui determinada variável. A partir destas informações, podemos conjecturar as realizações futuras a partir de cenários para as variáveis explicativas.
+Imagine, por exemplo, que o IPCA dos preços livres aumente cerca de 0.5p.p para cada 10% de depreciação cambial. Podemos, neste caso, fazer projeções para o IPCA com base no que esperamos para a taxa de câmbio em diferentes cenários (tudo o mais constante)."><meta property="og:image" content="/img/logo.png">
   <meta property="twitter:image" content="/img/logo.png"><meta property="og:locale" content="en">
   
     
-      <meta property="article:published_time" content="2020-08-22T00:00:00&#43;00:00">
+      <meta property="article:published_time" content="2020-10-01T00:00:00&#43;00:00">
     
-    <meta property="article:modified_time" content="2020-08-22T21:57:21-03:00">
+    <meta property="article:modified_time" content="2020-10-01T14:12:38-03:00">
   
 
   
@@ -149,7 +147,7 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
 
 
 
-  <title>Usando DLM para estimar coeficientes variantes no tempo | RLeripio</title>
+  <title>Como medir a incerteza em cenários | RLeripio</title>
 
 </head>
 
@@ -315,7 +313,7 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
   
   
 <div class="article-container pt-3">
-  <h1 itemprop="name">Usando DLM para estimar coeficientes variantes no tempo</h1>
+  <h1 itemprop="name">Como medir a incerteza em cenários</h1>
 
   
 
@@ -324,8 +322,8 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
 
 
 
-<meta content="2020-08-22 00:00:00 &#43;0000 UTC" itemprop="datePublished">
-<meta content="2020-08-22 21:57:21 -0300 -03" itemprop="dateModified">
+<meta content="2020-10-01 00:00:00 &#43;0000 UTC" itemprop="datePublished">
+<meta content="2020-10-01 14:12:38 -0300 -03" itemprop="dateModified">
 
 <div class="article-metadata">
 
@@ -340,7 +338,7 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
           Última atualização em
       
     
-    <time>Aug 22, 2020</time>
+    <time>Oct 1, 2020</time>
   </span>
   
 
@@ -356,7 +354,7 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
   
   <span class="middot-divider"></span>
   <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="">Data Science</a></span>
+    <i class="fas fa-folder mr-1"></i><a href="">Previsão</a></span>
   
 
   
@@ -372,7 +370,7 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
       
       
       <li>
-        <a href="https://twitter.com/intent/tweet?url=/post/usando-dlm-para-estimar-coeficientes-variantes-no-tempo/&amp;text=Usando%20DLM%20para%20estimar%20coeficientes%20variantes%20no%20tempo" target="_blank" rel="noopener" class="share-btn-twitter">
+        <a href="https://twitter.com/intent/tweet?url=/post/como-obter-distribuicoes-a-partir-de-cenarios/&amp;text=Como%20medir%20a%20incerteza%20em%20cen%c3%a1rios" target="_blank" rel="noopener" class="share-btn-twitter">
           <i class="fab fa-twitter"></i>
         </a>
       </li>
@@ -385,7 +383,7 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
       
       
       <li>
-        <a href="https://www.facebook.com/sharer.php?u=/post/usando-dlm-para-estimar-coeficientes-variantes-no-tempo/&amp;t=Usando%20DLM%20para%20estimar%20coeficientes%20variantes%20no%20tempo" target="_blank" rel="noopener" class="share-btn-facebook">
+        <a href="https://www.facebook.com/sharer.php?u=/post/como-obter-distribuicoes-a-partir-de-cenarios/&amp;t=Como%20medir%20a%20incerteza%20em%20cen%c3%a1rios" target="_blank" rel="noopener" class="share-btn-facebook">
           <i class="fab fa-facebook-f"></i>
         </a>
       </li>
@@ -398,7 +396,7 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
       
       
       <li>
-        <a href="mailto:?subject=Usando%20DLM%20para%20estimar%20coeficientes%20variantes%20no%20tempo&amp;body=/post/usando-dlm-para-estimar-coeficientes-variantes-no-tempo/" target="_blank" rel="noopener" class="share-btn-email">
+        <a href="mailto:?subject=Como%20medir%20a%20incerteza%20em%20cen%c3%a1rios&amp;body=/post/como-obter-distribuicoes-a-partir-de-cenarios/" target="_blank" rel="noopener" class="share-btn-email">
           <i class="fas fa-envelope"></i>
         </a>
       </li>
@@ -411,7 +409,7 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
       
       
       <li>
-        <a href="https://www.linkedin.com/shareArticle?url=/post/usando-dlm-para-estimar-coeficientes-variantes-no-tempo/&amp;title=Usando%20DLM%20para%20estimar%20coeficientes%20variantes%20no%20tempo" target="_blank" rel="noopener" class="share-btn-linkedin">
+        <a href="https://www.linkedin.com/shareArticle?url=/post/como-obter-distribuicoes-a-partir-de-cenarios/&amp;title=Como%20medir%20a%20incerteza%20em%20cen%c3%a1rios" target="_blank" rel="noopener" class="share-btn-linkedin">
           <i class="fab fa-linkedin-in"></i>
         </a>
       </li>
@@ -424,7 +422,7 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
       
       
       <li>
-        <a href="https://web.whatsapp.com/send?text=Usando%20DLM%20para%20estimar%20coeficientes%20variantes%20no%20tempo%20/post/usando-dlm-para-estimar-coeficientes-variantes-no-tempo/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+        <a href="https://web.whatsapp.com/send?text=Como%20medir%20a%20incerteza%20em%20cen%c3%a1rios%20/post/como-obter-distribuicoes-a-partir-de-cenarios/" target="_blank" rel="noopener" class="share-btn-whatsapp">
           <i class="fab fa-whatsapp"></i>
         </a>
       </li>
@@ -437,7 +435,7 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
       
       
       <li>
-        <a href="https://service.weibo.com/share/share.php?url=/post/usando-dlm-para-estimar-coeficientes-variantes-no-tempo/&amp;title=Usando%20DLM%20para%20estimar%20coeficientes%20variantes%20no%20tempo" target="_blank" rel="noopener" class="share-btn-weibo">
+        <a href="https://service.weibo.com/share/share.php?url=/post/como-obter-distribuicoes-a-partir-de-cenarios/&amp;title=Como%20medir%20a%20incerteza%20em%20cen%c3%a1rios" target="_blank" rel="noopener" class="share-btn-weibo">
           <i class="fab fa-weibo"></i>
         </a>
       </li>
@@ -473,119 +471,90 @@ Uma classe específica de modelos que atende a esse propósito é o Dynamic line
   <div class="article-container">
 
     <div class="article-style" itemprop="articleBody">
-      <p>Em <a href="https://www.rleripio.com.br/post/como-obter-rolling-windows-de-maneira-rapida-e-eficiente/">post recente</a> mostrei como obter versões <em>rolling</em> para funções específicas e como isso poderia ser utilizado para gerar coeficientes variantes no tempo em uma regressão.</p>
+      <p>Nem sempre empregamos modelos econométricos ou de machine learning para fazer projeções. É comum termos à disposição alguma forma funcional calibrada ou parâmetros que nos informam sobre como evolui determinada variável. A partir destas informações, podemos conjecturar as realizações futuras a partir de cenários para as variáveis explicativas.</p>
 
-<p>Uma limitação desta abordagem é que precisamos definir janelas para a estimação, o que pode alterar sensivelmente os resultados. Neste sentido, é desejável uma forma estrutural de obter coeficientes variantes no tempo.</p>
+<p>Imagine, por exemplo, que o IPCA dos preços livres aumente cerca de 0.5p.p para cada 10% de depreciação cambial. Podemos, neste caso, fazer projeções para o IPCA com base no que esperamos para a taxa de câmbio em diferentes cenários (tudo o mais constante). Isso nos dará projeções pontuais para o IPCA condicional aos valores assumidos para o câmbio: no cenário A o câmbio avança 5%; no cenário B o câmbio recua 7%; e por aí vai.</p>
 
-<p>Uma classe específica de modelos que atende a esse propósito é o <strong><em>Dynamic linear model</em></strong> (DLM). Em termos bem gerais, trata-se de escrever o modelo em um formato de estado-espaço e, na sequência, implementar algum algoritmo para retornar as estimativas dos parâmetros. Isso ficará mais claro com o exemplo.</p>
+<p>Apesar de extremamente útil, esta abordagem traz limitações. Uma delas é não fornecer, para um pequeno conjunto de cenários, uma distribuição completa de projeções a partir da qual seja possível inferir a incerteza em torno do valor central. A prática comum costuma ser definir cenários para os limites superior e inferior e assumir que todos os valores estão contidos neste intervalo com a mesma probabilidade.</p>
 
-<h2 id="passo-1-carregar-pacotes-e-importar-os-dados">Passo 1: carregar pacotes e importar os dados</h2>
+<p>Entretanto, em certas situações nós temos uma noção do balanço de risco dos nossos cenários: é mais provável que o câmbio termine o ano com variação positiva do que negativa, por exemplo. Além disso, pode ser que a nossa proejeção dependa do cenário para mais de uma variável. Neste caso, precisamos considerar também a interação entre os possíveis cenários de todas as variáveis.</p>
 
-<p>Diferente do exemplo com <em>rolling windows</em>, no qual modelei o IPCA como um processo SARIMA(1,0,0)(1,0,0)[12], aqui vou aplicar um ajuste sazonal à série de modo que possamos dispensar o termo sazonal da especificação e reduzi-la a um AR(1). Isso tornará o problema mais simples.</p>
+<p>Uma solução para lidar com essas dificuldades é gerar distribuições que reflitam o nosso cenário para cada variável e, em seguida, simular um grande número de cenários conjuntos para o resultado final. Para ilustrar, vamos recorrer a um exemplo típico dos livros-texto de macroeconomia: a evolução da dívida pública.</p>
 
-<pre><code class="language-r">library(tidyverse)
-library(MARSS)
-library(rbcb)
-library(seasonal)
+<p>De maneira simplificada, a relação dívida pública/PIB evolui de acordo com a seguite expressão:</p>
 
-# Importar IPCA livres
+<p><span  class="math">\[ \Delta b_t = (r - g) \times b_{t-1} - s \]</span></p>
 
-ipca_livres &lt;- rbcb::get_series(code = list(&quot;ipca&quot; = 11428),
-                                start_date = &quot;2004-01-01&quot;,
-                                as = &quot;ts&quot;)
+<p>onde: $ b $ é a relação dívida/PIB; $ r $ é a taxa de juros real; e  $ s $ é o superávit primário como proporção do PIB.</p>
 
-# Aplicar ajuste sazonal
+<p>Se quisermos usar essa expressão para projetar a dívida pública para 2021, precisaríamos de um cenário para quatro variáveis em 2021: taxa de juros nominal, inflação, crescimento do PIB e superávit primário.</p>
 
-ipca_livres_sa &lt;- final(seas(ipca_livres)) 
+<p>Para as três primeiras, vamos tomar como referência as <a href="https://www4.bcb.gov.br/pec/GCI/PORT/focus/DISTFREQ/P20200908-Distribui%C3%A7%C3%B5es%20de%20Frequ%C3%AAncia%20das%20Expectativas%20de%20Mercado%20para%20IPCA%20Selic%20PIB%20C%C3%A2mbio.pdf">expectativas do mercado divulgadas pelo BCB</a> em agosto. Nelas, os projeções para o PIB de 2021 aparecem centradas ao redor de 3.5% com grande assimetria à esquerda. O IPCA segue padrão parecido, centrado em 2.9% e maior massa à esquerda deste valor. A taxa de juros Selic, por sua vez, é bimodal com valores de 2% e 3.5%.</p>
+
+<p>Vamos usar o pacote <code>sn</code> para gerar distribuições (assimétricas) semelhantes. Para a taxa de juros Selic, vamos assumir que só existem dois valores possíveis: 2% com 40% de chance e 3.5% com 60% de chance. E o superávit, para simplificar, será 0%.</p>
+
+<pre><code class="language-r">library(sn)
+library(tidyverse)
+
+# Objetos para simular as ditribuições via pacote sn
+# Argumento gamma controla a assimetria
+lista_cp &lt;- list(&quot;ipca&quot; = c(mean = 2.9, s.d. = 0.39, gamma = -0.4),
+                 &quot;pib&quot; = c(mean = 3.48, s.d. = 0.68 , gamma = -0.6))
+
+lista_dp &lt;- purrr::map(.x = lista_cp, .f = cp2dp, family = &quot;sn&quot;)
+
+# Número de simulações
+n_sim &lt;- 100
+
+# Tibble com valores simulados em cada coluna
+set.seed(123)
+
+variaveis_sim &lt;- tibble(
   
-# Colocar em formato tibble e criar termo AR(1)
-
-ipca_tbl &lt;- ipca_livres_sa %&gt;%
-  
-  timetk::tk_tbl() %&gt;%
-  
-  magrittr::set_colnames(c(&quot;date&quot;, &quot;ipca&quot;)) %&gt;%
-  
-  dplyr::mutate(ipca_l1 = lag(ipca, 1)) %&gt;%
-  
-  tidyr::drop_na()
+  ipca  = sn::rsn(n_sim, dp = lista_dp[['ipca']]),
+  pib   = sn::rsn(n_sim, dp = lista_dp[['pib']]),
+  selic = sample(c(2.0, 3.5),  n_sim, 
+                 prob = c(0.40, 0.60), 
+                 replace = TRUE
+                 )
+  )
 </code></pre>
 
-<h2 id="passo-2-escrever-o-modelo-em-estadoespaço-e-estimar">Passo 2: escrever o modelo em estado-espaço e estimar</h2>
+<p>Antes de prosseguir, cabe observar o histograma das distribuições geradas e como elas possuem, de fato, assimetria. No fim das contas, isto vai contribuir para elevar a probabilidade de cenários que contenham valores para PIB e IPCA mais baixos.</p>
 
-<p>A formulação em estado-espaço pressupõe, basicamente, que existe um processo latente -- não observável -- e um conjunto de observações que chega até nós -- definido pelo modelo de <em>observação</em>. O processo latente, definido por um modelo de <em>estado</em>, evolui a partir de alguma lógica -- geralmente assumimos que é um <em>random walk</em>. Em particular, é a variância do termo de erro da equação de estado -- <strong>$R$</strong> -- que cria dinâmica nos coeficientes.</p>
+<p><img src="/post/2020-10-01-como-obter-distribuições-a-partir-de-cenários_files/figure-html/plot.distro-1.png" width="672" /></p>
 
-<p><span  class="math">\[ Y_t = Z\theta_t + A + V_t, Vt \sim N(0, Q) \rightarrow \text{(Observação)} \\ \theta_t = B\theta_{t-1} + U + W_t, W_t \sim N(0,R)  \rightarrow \text{(Estado)} \]</span></p>
+<p>Todos os cenários simulados estão no objeto <code>variaveis_sim</code>. Ele será utilizado para alimentar a expressão que define a variação da dívida pública. Antes, porém, precisamos gerar todas as combinações possíveis daqueles valores. A única ressalva aqui é que, com 100 simulações, temos $ 100^K $ cenários, onde $ K $ é o número de variáveis. Portanto, ampliar demais o número de variáveis e/ou de simulações pode gerar um objeto impossível de armazenar na memória.</p>
 
-<p>Aos interessados em compreender melhor como especificar tais modelos, deixo no final algumas boas referências.</p>
-
-<p>Vamos usar o pacote <code>MARSS</code> para estimar o modelo. Nosso sistema é expresso pelos objetos abaixo com o mesmo nome em que aparecem nas equações e devem ser declarados como matrizes -- ainda que em alguns casos sejam unidimensionais. Tudo o que precisa ser estimado entra como <em>character</em>. Para um AR(1) com intercepto, ambos os coeficientes variando no tempo, temos a seguinte configuração:</p>
-
-<pre><code class="language-r"># Número de observações
-
-n &lt;- nrow(ipca_tbl)
-
-# Variável dependente IPCA e independente IPCA_l1
-
-y &lt;- matrix(ipca_tbl$ipca, nrow = 1) 
-
-y_l1 &lt;- matrix(ipca_tbl$ipca_l1, nrow = 1)
-
-# Eq. de estado
-
-B &lt;- diag(2)
-U &lt;- matrix(0, 2, 1)
-Q &lt;- matrix(c(&quot;q.alpha&quot;, 0, 
-             0, &quot;q.beta&quot;), 
-           2, 2)
-
-# Eq. de observação
-
-Z &lt;- array(NA, c(1, 2, n))
-Z[1, 1, ] &lt;- rep(1, n) # Intercepto
-Z[1, 2, ] &lt;- y_l1 # Termo AR(1)
-A &lt;- matrix(0)
-R &lt;- matrix(&quot;r&quot;)
-
-# Valores iniciais do sistema
-
-x0 &lt;- list(x0 = matrix(0, nrow = 2))
-
-# Reunir as informações
-
-dlm.terms &lt;- list(B = B, U = U,
-                  Q = Q, Z = Z,
-                  A = A, R = R)
-
-## Ajuste do DLM
-
-dlm.fit &lt;- MARSS(y, 
-                 inits = x0, 
-                 model = dlm.terms, 
-                 silent = TRUE)  
+<pre><code class="language-r">cenarios_sim &lt;- purrr::cross3(.x = variaveis_sim$ipca,
+                              .y = variaveis_sim$pib,
+                              .z = variaveis_sim$selic)
 </code></pre>
 
-<p>É importante realizar diagnósticos a fim de atestar a validade do modelo. Dado que o objetivo aqui é expositivo, pularemos esta etapa.</p>
+<p>Por fim, simulamos os possíveis resultados para a dívida no próximo ano a partir de um valor inicial de 60%, conforme abaixo:</p>
 
-<h2 id="passo-3-resultados">Passo 3: Resultados</h2>
+<pre><code class="language-r">divida_sim &lt;- purrr::map_dbl(.x = cenarios_sim, .f = function(x){
 
-<p>Os valores do coeficiente ao longo do tempo podem ser obtidos em <code>dlm.fit$states</code>, assim como seu erro-padrão em <code>dlm.fit$states.se</code>. A partir deles, podemos gerar um gráfico para acompanhar a evolução do coeficiente autorregressivo. Adicionalmente, vamos incluir o valor do coeficiente obtido por um AR(1) fixo no tempo para servir de comparação.</p>
+x &lt;- unlist(x)
 
-<p><img src="/post/2020-08-22-usando-dlm-para-estimar-coeficientes-variantes-no-tempo_files/figure-html/plot-1.png" width="672" /></p>
+ipca  &lt;- x[1]
+pib   &lt;- x[2]
+selic &lt;- x[3]
 
-<p>A principal mensagem aqui é que, enquanto a estimação estática parece ser uma boa estimativa do coeficiente até meados de 2016, o mesmo não pode ser dito para o período seguinte. Em particular, isto tende a ocorrer quando existem mudanças estruturais importantes na série de interesse.</p>
+r &lt;- selic - ipca
 
-<p>No caso específico do nosso exercício, a literatura reporta que a persistência inflacionária guarda relação direta com o nível da inflação e inversa com a credibilidade da autoridade monetária. Nesse sentido, apesar da nossa especificação não controlar diversos fatores relevantes, faz sentido pensar que a persistência deva ser menor no período recente.</p>
+b_inicial &lt;- 60.0
 
-<p><strong>O Código completo</strong> encontra-se no <a href="http://www.github.com/leripio/blog">repositório do blog no GitHub.</a></p>
+b_final &lt;- (r - pib)*(b_inicial/100)
 
-<p><strong>Referências</strong></p>
+})
+</code></pre>
 
-<ol>
-<li><p>Holmes, E. E., M. D. Scheuerell, and E. J. Ward. <a href="https://nwfsc-timeseries.github.io/atsa-labs/">Applied time series analysis for fisheries and environmental data.</a> NOAA Fisheries, Northwest Fisheries Science Center, 2725 Montlake Blvd E., Seattle, WA 98112. Contacts eli.holmes@noaa.gov, eric.ward@noaa.gov, and mark.scheuerell@noaa.gov.</p></li>
+<p>O resultado segue abaixo. O valor central para nossa projeção é ao redor de -2%, o que indica uma dívida menor para 2021 -- lembrando que existe zero compromisso aqui com a realidade. Isso seria compatível com um cenário de juros reais inferiores ao crescimento do PIB e sem déficit primário.</p>
 
-<li><p>Analysis of multivariate timeseries using the MARSS package. <a href="https://cran.r-project.org/web/packages/MARSS/vignettes/UserGuide.pdf">https://cran.r-project.org/web/packages/MARSS/vignettes/UserGuide.pdf</a></p></li>
-</ol>
+<p>Adicionalmente, podemos extrair a incerteza através do quantis da distribuição: por exemplo, a dívida deve cair entre 3.13% e 1.11% considerando o intervalo de 95%. Alternativamente, poderíamos extrair a probabilidade de ocorrência de cenários extremos: qual a chance de a dívida cair mais do que 3.5% ou menos que 1%? Fica de exercício para os interessados!</p>
+
+<p><img src="/post/2020-10-01-como-obter-distribuições-a-partir-de-cenários_files/figure-html/sim_hist-1.png" width="672" /></p>
 
 <p><strong>Aviso legal</strong>: Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.</p>
 
@@ -598,11 +567,13 @@ dlm.fit &lt;- MARSS(y,
 
 <div class="article-tags">
   
-  <a class="badge badge-light" href="/tags/dynamic-linear-models/">dynamic linear models</a>
+  <a class="badge badge-light" href="/tags/cenario/">cenário</a>
   
-  <a class="badge badge-light" href="/tags/dlm/">dlm</a>
+  <a class="badge badge-light" href="/tags/distribuicao/">distribuição</a>
   
-  <a class="badge badge-light" href="/tags/time-varying/">time varying</a>
+  <a class="badge badge-light" href="/tags/incerteza/">incerteza</a>
+  
+  <a class="badge badge-light" href="/tags/previsao/">previsão</a>
   
 </div>
 
@@ -713,6 +684,16 @@ dlm.fit &lt;- MARSS(y,
 
 
       
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Relacionados</h3>
+        <ul>
+          
+          <li><a href="/post/tales-from-tails-analisando-o-risco-em-previsoes/">Tales from tails: analisando o risco em previsões</a></li>
+          
+        </ul>
+      </div>
       
     
 

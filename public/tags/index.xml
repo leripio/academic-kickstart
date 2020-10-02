@@ -5,12 +5,44 @@
     <link>/tags/</link>
       <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     <description>Tags</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Sat, 22 Aug 2020 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Thu, 01 Oct 2020 00:00:00 +0000</lastBuildDate>
     <image>
       <url>/img/logo.png</url>
       <title>Tags</title>
       <link>/tags/</link>
     </image>
+    
+    <item>
+      <title>cenário</title>
+      <link>/tags/cenario/</link>
+      <pubDate>Thu, 01 Oct 2020 00:00:00 +0000</pubDate>
+      <guid>/tags/cenario/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>distribuição</title>
+      <link>/tags/distribuicao/</link>
+      <pubDate>Thu, 01 Oct 2020 00:00:00 +0000</pubDate>
+      <guid>/tags/distribuicao/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>incerteza</title>
+      <link>/tags/incerteza/</link>
+      <pubDate>Thu, 01 Oct 2020 00:00:00 +0000</pubDate>
+      <guid>/tags/incerteza/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Previsão</title>
+      <link>/tags/previsao/</link>
+      <pubDate>Thu, 01 Oct 2020 00:00:00 +0000</pubDate>
+      <guid>/tags/previsao/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>dlm</title>
@@ -117,14 +149,6 @@
     </item>
     
     <item>
-      <title>Previsão</title>
-      <link>/tags/previsao/</link>
-      <pubDate>Thu, 23 Jul 2020 00:00:00 +0000</pubDate>
-      <guid>/tags/previsao/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>tracking</title>
       <link>/tags/tracking/</link>
       <pubDate>Thu, 23 Jul 2020 00:00:00 +0000</pubDate>
@@ -185,14 +209,6 @@
       <link>/tags/vix/</link>
       <pubDate>Fri, 09 Aug 2019 00:00:00 +0000</pubDate>
       <guid>/tags/vix/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>distribuição</title>
-      <link>/tags/distribuicao/</link>
-      <pubDate>Mon, 29 Jul 2019 00:00:00 +0000</pubDate>
-      <guid>/tags/distribuicao/</guid>
       <description></description>
     </item>
     

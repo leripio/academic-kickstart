@@ -77,15 +77,15 @@ y_l1 &amp;lt;- matrix(ipca_tbl$ipca_l1, nrow = 1)
 
 # Eq. de estado
 
-B = diag(2)
-U = matrix(0, 2, 1)
-Q = matrix(c(&amp;quot;q.alpha&amp;quot;, 0, 
+B &amp;lt;- diag(2)
+U &amp;lt;- matrix(0, 2, 1)
+Q &amp;lt;- matrix(c(&amp;quot;q.alpha&amp;quot;, 0, 
              0, &amp;quot;q.beta&amp;quot;), 
            2, 2)
 
 # Eq. de observação
 
-Z = array(NA, c(1, 2, n))
+Z &amp;lt;- array(NA, c(1, 2, n))
 Z[1, 1, ] &amp;lt;- rep(1, n) # Intercepto
 Z[1, 2, ] &amp;lt;- y_l1 # Termo AR(1)
 A &amp;lt;- matrix(0)

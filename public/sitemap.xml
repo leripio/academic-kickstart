@@ -3,27 +3,52 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>/tags/cenario/</loc>
+    <lastmod>2020-10-01T14:12:38-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/como-obter-distribuicoes-a-partir-de-cenarios/</loc>
+    <lastmod>2020-10-01T14:12:38-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/distribuicao/</loc>
+    <lastmod>2020-10-01T14:12:38-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/incerteza/</loc>
+    <lastmod>2020-10-01T14:12:38-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/</loc>
+    <lastmod>2020-10-01T14:12:38-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/previsao/</loc>
+    <lastmod>2020-10-01T14:12:38-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/</loc>
+    <lastmod>2020-10-01T14:12:38-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2020-10-01T14:12:38-03:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/tags/dlm/</loc>
     <lastmod>2020-08-22T21:57:21-03:00</lastmod>
   </url>
   
   <url>
     <loc>/tags/dynamic-linear-models/</loc>
-    <lastmod>2020-08-22T21:57:21-03:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/post/</loc>
-    <lastmod>2020-08-22T21:57:21-03:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/</loc>
-    <lastmod>2020-08-22T21:57:21-03:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/</loc>
     <lastmod>2020-08-22T21:57:21-03:00</lastmod>
   </url>
   
@@ -108,11 +133,6 @@
   </url>
   
   <url>
-    <loc>/tags/previsao/</loc>
-    <lastmod>2020-07-23T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/tags/tracking/</loc>
     <lastmod>2020-07-23T00:00:00+00:00</lastmod>
   </url>
@@ -160,11 +180,6 @@
   <url>
     <loc>/tags/vix/</loc>
     <lastmod>2019-09-08T18:43:18-03:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/distribuicao/</loc>
-    <lastmod>2019-09-08T19:16:31-03:00</lastmod>
   </url>
   
   <url>

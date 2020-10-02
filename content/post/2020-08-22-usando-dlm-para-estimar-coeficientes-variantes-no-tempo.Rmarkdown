@@ -87,15 +87,15 @@ y_l1 <- matrix(ipca_tbl$ipca_l1, nrow = 1)
 
 # Eq. de estado
 
-B = diag(2)
-U = matrix(0, 2, 1)
-Q = matrix(c("q.alpha", 0, 
+B <- diag(2)
+U <- matrix(0, 2, 1)
+Q <- matrix(c("q.alpha", 0, 
              0, "q.beta"), 
            2, 2)
 
 # Eq. de observação
 
-Z = array(NA, c(1, 2, n))
+Z <- array(NA, c(1, 2, n))
 Z[1, 1, ] <- rep(1, n) # Intercepto
 Z[1, 2, ] <- y_l1 # Termo AR(1)
 A <- matrix(0)
