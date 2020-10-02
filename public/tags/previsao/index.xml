@@ -96,9 +96,9 @@ b_final &amp;lt;- (r - pib)*(b_inicial/100)
 })
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;O resultado segue abaixo. O valor central para nossa projeção é ao redor de -2%, o que indica uma dívida menor para 2021 -- lembrando que existe zero compromisso aqui com a realidade. Isso seria compatível com um cenário de juros reais inferiores ao crescimento do PIB e sem déficit primário.&lt;/p&gt;
+&lt;p&gt;O resultado segue abaixo. O valor central para nossa projeção é ao redor de -2p.p, o que indica uma dívida menor para 2021 -- lembrando que existe zero compromisso aqui com a realidade. Isso seria compatível com um cenário de juros reais inferiores ao crescimento do PIB e sem déficit primário.&lt;/p&gt;
 
-&lt;p&gt;Adicionalmente, podemos extrair a incerteza através do quantis da distribuição: por exemplo, a dívida deve cair entre 3.13% e 1.11% considerando o intervalo de 95%. Alternativamente, poderíamos extrair a probabilidade de ocorrência de cenários extremos: qual a chance de a dívida cair mais do que 3.5% ou menos que 1%? Fica de exercício para os interessados!&lt;/p&gt;
+&lt;p&gt;Adicionalmente, podemos extrair a incerteza através do quantis da distribuição: por exemplo, a dívida deve cair entre 3.13p.p e 1.11p.p considerando o intervalo de 95%. Alternativamente, poderíamos extrair a probabilidade de ocorrência de cenários extremos: qual a chance de a dívida cair mais do que 3.5p.p ou menos que 1p.p? Fica de exercício para os interessados!&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;/post/2020-10-01-como-obter-distribuições-a-partir-de-cenários_files/figure-html/sim_hist-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 
