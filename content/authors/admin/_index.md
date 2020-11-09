@@ -21,7 +21,7 @@ organizations:
 bio: Analista de pesquisa quantitativa na Itaú Asset Management.
 
 interests:
-- Macroeconomia aplicada
+- Econometria aplicada
 - Previsão de séries temporais
 - Linguagem R
 
@@ -50,7 +50,7 @@ social:
   link: https://www.linkedin.com/in/leripiorenato/
 - icon: cv
   icon_pack: ai
-  link: https://drive.google.com/open?id=1zjnAMdP4nlLmhGEocYkupo-JNppNWpuP
+  link: files/cv.pdf
   
 # Link to a PDF of your resume/CV from the About widget.
 # To enable, copy your resume/CV to `static/files/cv.pdf` and uncomment the lines below.  
@@ -68,4 +68,4 @@ user_groups:
 - Visitors
 ---
 
-Mestre em Economia com experiência na elaboração de modelos econométricos, previsão de séries temporais e programação em linguagem R. Trabalhou como pesquisador no IBRE/FGV e na CODEPLAN/DF. Atualmente é analista de pesquisa quantitativa na Itaú Asset Management.
+Sou analista na divisão de pesquisa quantitativa da Itau Asset Management, responsável por desenvolver estudos e ferramentas para temas econômicos. Tenho experiência em modelagem econométrica/machine learning, previsão de séries temporais e programação em linguagem R.

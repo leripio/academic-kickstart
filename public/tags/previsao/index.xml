@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Previsão | RLeripio</title>
+    <title>previsão | RLeripio</title>
     <link>/tags/previsao/</link>
       <atom:link href="/tags/previsao/index.xml" rel="self" type="application/rss+xml" />
-    <description>Previsão</description>
+    <description>previsão</description>
     <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Thu, 01 Oct 2020 00:00:00 +0000</lastBuildDate>
     <image>
       <url>/img/logo.png</url>
-      <title>Previsão</title>
+      <title>previsão</title>
       <link>/tags/previsao/</link>
     </image>
     
