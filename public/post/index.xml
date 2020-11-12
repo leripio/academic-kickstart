@@ -5,12 +5,90 @@
     <link>/post/</link>
       <atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Thu, 01 Oct 2020 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Tue, 10 Nov 2020 00:00:00 +0000</lastBuildDate>
     <image>
       <url>/img/logo.png</url>
       <title>Posts</title>
       <link>/post/</link>
     </image>
+    
+    <item>
+      <title>Funções-perda alternativas para seleção de modelos de previsão</title>
+      <link>/post/funcoes-perda-alternativas-para-selecao-de-modelos-de-previsao/</link>
+      <pubDate>Tue, 10 Nov 2020 00:00:00 +0000</pubDate>
+      <guid>/post/funcoes-perda-alternativas-para-selecao-de-modelos-de-previsao/</guid>
+      <description>&lt;p&gt;Em um &lt;a href=&#34;https://www.rleripio.com.br/post/tales-from-tails-analisando-o-risco-em-previsoes/&#34;&gt;post passado&lt;/a&gt;, abordei uma métrica alternativa para medir a acurácia de modelos de previsão. A &lt;em&gt;risk measure&lt;/em&gt; buscava eliminar a possibilidade de escolher modelos com chances de entregar valores extremos. A ideia aqui é ser um tanto mais geral.&lt;/p&gt;
+
+&lt;p&gt;O problema de escolher um modelo de previsão geralmente consiste em minimizar alguma métrica, sendo comum o erro absoluto médio (MAE) ou a raiz do erro quadrado médio (RMSE). Essas métricas funcionam como &lt;em&gt;funções-perda&lt;/em&gt;, isto é, elas expressam um objetivo. Entretanto, muitas vezes não traduzimos de forma ampla nosso objetivo ao escolher um modelo de previsão.&lt;/p&gt;
+
+&lt;p&gt;Por exemplo, MAE e RMSE são funções simétricas. Além disso, ambas usam média simples para sumarizar os erros de projeção. Quando utilizamos alguma delas para avaliar qual modelo é melhor, no fundo estamos dizendo:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;&amp;quot;Eu não me importo com o sinal do erro -- 2 unidades para cima ou para baixo impactam igualmente o meu resultado --, bem como não faz diferença se os maiores erros foram cometidos recentemente ou em período mais distante.&amp;quot;&lt;/em&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Seguramente essas condições não se aplicam a todos os negócios. Alguém interessado em prever demanda pode preferir errar para mais a errar para menos. Também é possível que prefira modelos cujas projeções tenham ficado mais próximas dos valores realizados nos últimos 6 meses em comparação aos primeiros 6 meses do &lt;em&gt;backtest&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;Em suma, em muitas situações é preciso definir quais condições o modelo deve atender e isso envolve criar uma &lt;strong&gt;função&lt;/strong&gt;. Essa função deve sumarizar os erros das projeções de modo a representar nosso &lt;strong&gt;objetivo&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;Considere a função abaixo em que $ x $ é o erro, isto é, a diferença entre o valor previsto e o realizado:&lt;/p&gt;
+
+&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[ \begin{equation}
+f(x) = 
+\begin{cases} 
+\ \frac{x}{2} &amp; \text{se } x \geq 0 \\
+\ 2|x|         &amp; \text{se } x &lt; 0
+\end{cases}`
+\end{equation} \]&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;Em palavras, estamos dizendo que um erro negativo será penalizado duas vezes mais que no MAE convencional e um erro positivo duas vezes menos. Adicionalmente, podemos definir que erros mais recentes ganhem maior peso. Isso pode ser feito computando uma média ponderada em que os pesos são a posição da observação no vetor de erros. Abaixo um exemplo de como declarar esta função:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;alternative_loss &amp;lt;- function(x){
+  
+y &amp;lt;- ifelse(x &amp;gt;= 0, x/2, 2*abs(x))
+
+w &amp;lt;- seq(from = 1, to = length(y), by = 1)
+
+w &amp;lt;- w/sum(w)
+
+output &amp;lt;- weighted.mean(y, w)
+
+return(output)
+  
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Podemos visualizar $ f(x) $ em forma de gráfico para ganhar intuição.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post/2020-11-10-funções-perda-alternativas-para-seleção-de-modelos-de-previsão_files/figure-html/plot_loss-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Na sequência, ajustamos um conjunto de modelos aos dados de vendas mensais de vinhos na Austrália -- disponível no pacote &lt;code&gt;forecast&lt;/code&gt; -- e computamos os erros de projeção fora da amostra para as últimas 12 observações. Abaixo segue a classificação a partir do MAE convencional:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A tibble: 3 x 3
+##   .method .metric .estimate
+##   &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;       &amp;lt;dbl&amp;gt;
+## 1 ets     mae         2205.
+## 2 tbats   mae         2296.
+## 3 snaive  mae         2334.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Na sequência, podemos utilizar nossa medida alternativa para classificar os modelos. Basicamente, estamos pegando o mesmo vetor de erros e aplicando a nova função. Os resultados são:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;## # A tibble: 3 x 3
+##   .method .metric     .estimate
+##   &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;           &amp;lt;dbl&amp;gt;
+## 1 snaive  alternative     2489.
+## 2 tbats   alternative     2824.
+## 3 ets     alternative     2876.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Os valores não são diretamente comparáveis, o que importa é a ordenação. Considerando o objetivo mais amplo, o modelo &lt;code&gt;snaive&lt;/code&gt; obteve melhor performance em relação ao &lt;code&gt;ets&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Evidentemente, encontramos diversas características desejáveis em métricas como MAE ou RMSE e a ideia deste post não é excluí-las do jogo -- tampouco colocar a métrica adotada no exemplo como referência. A mensagem aqui é que, à medida que ganha relevância o processo de selecionar modelos, deve-se ter em mente que objetivo pretende-se alcançar e como traduzi-lo em uma métrica adequada. Neste aspecto, conhecer formas funcionais é fundamental.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Aviso legal&lt;/strong&gt;: Todo o conteúdo desta página é de responsabilidade pessoal do autor e não expressa a visão da instituição a qual o autor tem vínculo profissional.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Como medir a incerteza em cenários</title>

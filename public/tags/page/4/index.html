@@ -31,7 +31,7 @@
   <meta name="description" content="Quantitative Research Analyst">
 
   
-  <link rel="alternate" hreflang="en" href="/tags/previsao/">
+  <link rel="alternate" hreflang="en" href="/tags/">
 
   
 
@@ -107,14 +107,14 @@
   
 
   
-  <link rel="alternate" href="/tags/previsao/index.xml" type="application/rss+xml" title="RLeripio">
+  <link rel="alternate" href="/tags/index.xml" type="application/rss+xml" title="RLeripio">
   
 
   <link rel="manifest" href="/index.webmanifest">
   <link rel="icon" type="image/png" href="/img/icon-32.png">
   <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
 
-  <link rel="canonical" href="/tags/previsao/">
+  <link rel="canonical" href="/tags/">
 
   
   
@@ -127,8 +127,8 @@
   <meta property="twitter:card" content="summary">
   
   <meta property="og:site_name" content="RLeripio">
-  <meta property="og:url" content="/tags/previsao/">
-  <meta property="og:title" content="Previsão | RLeripio">
+  <meta property="og:url" content="/tags/">
+  <meta property="og:title" content="Tags | RLeripio">
   <meta property="og:description" content="Quantitative Research Analyst"><meta property="og:image" content="/img/logo.png">
   <meta property="twitter:image" content="/img/logo.png"><meta property="og:locale" content="en">
   
@@ -144,7 +144,7 @@
 
 
 
-  <title>Previsão | RLeripio</title>
+  <title>Tags | RLeripio</title>
 
 </head>
 
@@ -332,7 +332,7 @@
     
   
 <div class="universal-wrapper pt-3">
-  <h1 itemprop="name">Previsão</h1>
+  <h1 itemprop="name">Tags</h1>
 
   
 
@@ -347,75 +347,37 @@
   
   
   <div>
-    <h2><a href="/post/funcoes-perda-alternativas-para-selecao-de-modelos-de-previsao/">Funções-perda alternativas para seleção de modelos de previsão</a></h2>
+    <h2><a href="/tags/otimizacao/">otimização</a></h2>
     <div class="article-style">
-      
-      Em um post passado, abordei uma métrica alternativa para medir a acurácia de modelos de previsão. A risk measure buscava eliminar a possibilidade de escolher modelos com chances de entregar valores extremos. A ideia aqui é ser um tanto mais geral.
-O problema de escolher um modelo de previsão geralmente consiste em minimizar alguma métrica, sendo comum o erro absoluto médio (MAE) ou a raiz do erro quadrado médio (RMSE). Essas métricas funcionam como funções-perda, isto é, elas expressam um objetivo.
       
     </div>
   </div>
   
   <div>
-    <h2><a href="/post/como-obter-distribuicoes-a-partir-de-cenarios/">Como medir a incerteza em cenários</a></h2>
+    <h2><a href="/tags/bagging/">bagging</a></h2>
     <div class="article-style">
-      
-      Nem sempre empregamos modelos econométricos ou de machine learning para fazer projeções. É comum termos à disposição alguma forma funcional calibrada ou parâmetros que nos informam sobre como evolui determinada variável. A partir destas informações, podemos conjecturar as realizações futuras a partir de cenários para as variáveis explicativas.
-Imagine, por exemplo, que o IPCA dos preços livres aumente cerca de 0.5p.p para cada 10% de depreciação cambial. Podemos, neste caso, fazer projeções para o IPCA com base no que esperamos para a taxa de câmbio em diferentes cenários (tudo o mais constante).
       
     </div>
   </div>
   
   <div>
-    <h2><a href="/post/como-fazer-um-tracking-eficiente-das-suas-projecoes/">Como fazer um tracking eficiente das suas projeções</a></h2>
+    <h2><a href="/tags/bootstrap/">bootstrap</a></h2>
     <div class="article-style">
-      
-      Quem realiza projeções deve manter seus resultados armazenados, de modo que seja possível recuperá-los a qualquer momento. Isso permite, por exemplo, acompanhar o desempenho do modelo ao longo do tempo.
-A tarefa pode ser feita em dois passos. Primeiro, criar um tibble com três colunas: a data na qual as projeções foram geradas; a data para a qual as projeções foram feitas; e, por fim, os valores (ou distribuição) projetados.
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/utilizando-redes-neurais-para-combinar-modelos/">Utilizando redes neurais para combinar modelos</a></h2>
-    <div class="article-style">
-      
-      No post &ldquo;Combinando modelos de previsão&rdquo;, apresentei duas formas simples de combinar modelos de previsão. A primeira delas envolvia obter uma combinação linear das previsões individuais de cada modelo, através de um método de otimização (OLS, por exemplo, ou equivalente). O segundo método utilizava a mediana das projeções dos modelos individuais. Embora operacionalmente mais simples, esta última abordagem performou melhor que a anterior &ndash; um resultado nada surpreendente, pois existe literatura mostrando que é mesmo difícil obter resultados melhores que a combinação por mediana daqueles modelos empregados.
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/tales-from-tails-analisando-o-risco-em-previsoes/">Tales from tails: analisando o risco em previsões</a></h2>
-    <div class="article-style">
-      
-      No post anterior, tratei de estratégias para combinar modelos de previsão a fim de obter melhores resultados. Melhor resultado, naquele contexto, significava apresentar menor Root mean square forecast error (RMSFE).É muito comum &ndash; tanto na literatura como na prática &ndash; utilizar esta medida ou outras semelhantes que envolvam médias dos desvios quadráticos ou absolutos dos erros, por exemplo MSE, MSPE, MASE, MAPE, etc. Sabe-se, contudo, que médias são muito sensíveis a valores extremos.
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/combinando-modelos-de-previsao/">Combinando modelos de previsão</a></h2>
-    <div class="article-style">
-      
-      Em posts anteriores apresentei algumas metodologias capazes de melhorar previsões. Em particular, falei um pouco sobre bagging — uma técnica que estima um modelo específico sobre variações da série original e, em seguida, computa a média/mediana destas previsões (ver aqui) — e sobre rectify — uma abordagem que considera eventuais informações contidas nos erros de previsão (ver aqui). Em todos os casos considerei apenas um único modelo para realizar as previsões.
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/como-aprimorar-previsoes-uma-aplicacao-com-bootstrap/">Como aprimorar previsões: uma aplicação com bootstrap</a></h2>
-    <div class="article-style">
-      
-      O exercício de hoje tem como objetivo apresentar uma técnica com potencial para aprimorar a previsão pontual de uma série, conhecida como bagging (bootstrap aggregating).
-Partindo do pressuposto de que toda série temporal é uma realização específica de um processo estocástico, o que este método faz é gerar outras possíveis realizações (séries) deste mesmo processo gerador. E como isso é feito?
-Em primeiro lugar, a série original é decomposta em tendência, sazonalidade e restante (pense neste último termo como a parte aleatória da série).
       
     </div>
   </div>
   
 
   
+<nav>
+  <ul class="pagination justify-content-center">
+    
+    <li class="page-item"><a class="page-link" href="/tags/page/3/">&laquo;</a></li>
+    
+    
+  </ul>
+</nav>
+
 
 </div>
 

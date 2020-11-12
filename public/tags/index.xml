@@ -5,12 +5,44 @@
     <link>/tags/</link>
       <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     <description>Tags</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Thu, 01 Oct 2020 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><lastBuildDate>Tue, 10 Nov 2020 00:00:00 +0000</lastBuildDate>
     <image>
       <url>/img/logo.png</url>
       <title>Tags</title>
       <link>/tags/</link>
     </image>
+    
+    <item>
+      <title>loss</title>
+      <link>/tags/loss/</link>
+      <pubDate>Tue, 10 Nov 2020 00:00:00 +0000</pubDate>
+      <guid>/tags/loss/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>model selection</title>
+      <link>/tags/model-selection/</link>
+      <pubDate>Tue, 10 Nov 2020 00:00:00 +0000</pubDate>
+      <guid>/tags/model-selection/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Previsão</title>
+      <link>/tags/previsao/</link>
+      <pubDate>Tue, 10 Nov 2020 00:00:00 +0000</pubDate>
+      <guid>/tags/previsao/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>seleção</title>
+      <link>/tags/selecao/</link>
+      <pubDate>Tue, 10 Nov 2020 00:00:00 +0000</pubDate>
+      <guid>/tags/selecao/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>cenário</title>
@@ -33,14 +65,6 @@
       <link>/tags/incerteza/</link>
       <pubDate>Thu, 01 Oct 2020 00:00:00 +0000</pubDate>
       <guid>/tags/incerteza/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>previsão</title>
-      <link>/tags/previsao/</link>
-      <pubDate>Thu, 01 Oct 2020 00:00:00 +0000</pubDate>
-      <guid>/tags/previsao/</guid>
       <description></description>
     </item>
     
