@@ -102,7 +102,7 @@ ggplot(aes(x = x)) +
   scale_color_manual(values = c("darkblue", "red")) +
   
   labs(title = "<span style='color:#002266;'><b>Perda customizada</b></span> vs <span style='color:#ff1a1a;'><b>Erro absoluto</b></span>",
-       x = "", y = "")
+       x = "Erro", y = "Perda")
 
 ```
 
